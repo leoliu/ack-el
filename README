@@ -10,3 +10,14 @@ From http://betterthangrep.com/
     Perl's regular expressions.
 
 Feature requests and bug reports are welcome. Thanks.
+
+Install
+----------
+
+Drop ack.el in the load-path and put (require 'ack) or (autoload 'ack
+"ack" nil t) in your .emacs.
+
+Usage
+----------
+
+M-x ack
