@@ -41,11 +41,8 @@
   :type 'boolean
   :group 'ack)
 
-(defcustom ack-command "ack --nogroup -- "
+(defcustom ack-command "ack -- "
   "The default ack command for \\[ack].
-
-Make sure --nogroup is present otherwise some commands may not
-work as expected.
 
 Note also options to ack can be specified in ACK_OPTIONS
 environment variable and ~/.ackrc, which you can disable by the
@@ -56,6 +53,10 @@ environment variable and ~/.ackrc, which you can disable by the
 ;;; ======== END of USER OPTIONS ========
 
 (defvar ack-history nil "History list for ack.")
+
+;; Used implicitly by `define-compilation-mode'
+(defvar ack-error "ack match"
+  "Stem of message to print when no matches are found.")
 
 (defun ack-filter ()
   "Handle match highlighting escape sequences inserted by the ack process.
@@ -70,7 +71,8 @@ This function is called from `compilation-filter-hook'."
 
 ;; Used implicitly by `define-compilation-mode'
 (defvar ack-mode-font-lock-keywords
-  '(;; Command output lines.
+  '(("^--$" 0 'shadow)
+    ;; Command output lines.
     (": \\(.+\\): \\(?:Permission denied\\|No such \\(?:file or directory\\|device or address\\)\\)$"
      1 'compilation-error)
     ;; remove match from ack-regexp-alist before fontifying
@@ -83,25 +85,40 @@ This function is called from `compilation-filter-hook'."
   "Additional things to highlight in ack output.
 This gets tacked on the end of the generated expressions.")
 
+(defun ack--column-start ()
+  (let* ((beg (match-end 0))
+         (end (save-excursion
+                (goto-char beg)
+                (line-end-position)))
+         (mbeg (text-property-any beg end 'ack-color t)))
+    (when mbeg (- mbeg beg))))
+
+(defun ack--column-end ()
+  (let* ((beg (match-end 0))
+         (end (save-excursion
+                (goto-char beg)
+                (line-end-position)))
+         (mbeg (text-property-any beg end 'ack-color t))
+         (mend (and mbeg (next-single-property-change
+                          mbeg 'ack-color nil end))))
+    (when mend (- mend beg))))
+
+(defun ack--file ()
+  (let (file)
+    (save-excursion
+      (forward-line -1)
+      (setq file (or (get-text-property (line-beginning-position) 'ack-file)
+                     (buffer-substring-no-properties
+                      (line-beginning-position) (line-end-position)))))
+    (put-text-property (line-beginning-position)
+                       (1+ (line-end-position)) 'ack-file file)
+    (list file)))
+
 (defconst ack-regexp-alist
-  '(("^\\(.+?\\):\\([1-9][0-9]*\\):\\(?:\\([1-9][0-9]*\\):\\)?"
-     1 2 ((lambda ()
-            (let* ((beg (match-end 0))
-                   (end (save-excursion
-                          (goto-char beg)
-                          (line-end-position)))
-                   (mbeg (text-property-any beg end 'ack-color t)))
-              (when mbeg (- mbeg beg))))
-          .
-          (lambda ()
-            (let* ((beg (match-end 0))
-                   (end (save-excursion
-                          (goto-char beg)
-                          (line-end-position)))
-                   (mbeg (text-property-any beg end 'ack-color t))
-                   (mend (and mbeg (next-single-property-change
-                                    mbeg 'ack-color nil end))))
-              (when mend (- mend beg))))))
+  '(("^\\(.+?\\)\\(:\\|-\\)\\([1-9][0-9]*\\)\\2\\(?:\\([1-9][0-9]*\\)\\2\\)?"
+     1 3 (ack--column-start . ack--column-end))
+    ("^\\([1-9][0-9]*\\)\\(:\\|-\\)\\(?:[1-9][0-9]*\\2\\)?"
+     ack--file 1 (ack--column-start . ack--column-end))
     ("^Binary file \\(.+\\) matches$" 1 nil nil 0 1))
   "Ack version of `compilation-error-regexp-alist' (which see).")
 
