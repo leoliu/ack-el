@@ -106,7 +106,9 @@ This gets tacked on the end of the generated expressions.")
 (defun ack--file ()
   (let (file)
     (save-excursion
-      (forward-line -1)
+      (while (progn
+               (forward-line -1)
+               (looking-at-p "^--$")))
       (setq file (or (get-text-property (line-beginning-position) 'ack-file)
                      (buffer-substring-no-properties
                       (line-beginning-position) (line-end-position)))))
@@ -115,10 +117,12 @@ This gets tacked on the end of the generated expressions.")
     (list file)))
 
 (defconst ack-regexp-alist
-  '(("^\\(.+?\\)\\(:\\|-\\)\\([1-9][0-9]*\\)\\2\\(?:\\([1-9][0-9]*\\)\\2\\)?"
-     1 3 (ack--column-start . ack--column-end))
+  '(;; grouping line (--group or --heading)
     ("^\\([1-9][0-9]*\\)\\(:\\|-\\)\\(?:[1-9][0-9]*\\2\\)?"
      ack--file 1 (ack--column-start . ack--column-end))
+    ;; none grouping line (--nogroup or --noheading)
+    ("^\\(.+?\\)\\(:\\|-\\)\\([1-9][0-9]*\\)\\2\\(?:\\([1-9][0-9]*\\)\\2\\)?"
+     1 3 (ack--column-start . ack--column-end))
     ("^Binary file \\(.+\\) matches$" 1 nil nil 0 1))
   "Ack version of `compilation-error-regexp-alist' (which see).")
 
