@@ -136,14 +136,19 @@ This gets tacked on the end of the generated expressions.")
   (add-hook 'compilation-filter-hook 'ack-filter nil t))
 
 ;;;###autoload
-(defun ack (command-args)
+(defun ack (command-args &optional directory)
   "Run ack using COMMAND-ARGS and collect output in a buffer.
+With prefix, ask for the DIRECTORY to run ack.
 
 \\{ack-mode-map}"
   (interactive
    (list (read-from-minibuffer "Run ack (like this): "
-                               ack-command nil nil 'ack-history)))
-  (compilation-start command-args 'ack-mode))
+                               ack-command nil nil 'ack-history)
+         (and current-prefix-arg
+              (read-directory-name "In directory: " nil nil t))))
+  (let ((default-directory (expand-file-name
+                            (or directory default-directory))))
+    (compilation-start command-args 'ack-mode)))
 
 (provide 'ack)
 ;;; ack.el ends here
