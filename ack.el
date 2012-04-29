@@ -55,6 +55,10 @@ environment variable and ~/.ackrc, which you can disable by the
 (defvar ack-history nil "History list for ack.")
 
 ;; Used implicitly by `define-compilation-mode'
+(defvar ack-first-column 0
+  "Value to use for `compilation-first-column' in ack buffers.")
+
+;; Used implicitly by `define-compilation-mode'
 (defvar ack-error "ack match"
   "Stem of message to print when no matches are found.")
 
