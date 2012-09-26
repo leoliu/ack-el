@@ -29,6 +29,7 @@
 
 (require 'compile)
 (require 'ansi-color)
+(autoload 'shell-completion-vars "shell")
 
 (defgroup ack nil
   "Run `ack' and display the results."
@@ -41,7 +42,7 @@
   :type 'boolean
   :group 'ack)
 
-(defcustom ack-command "ack -- "
+(defcustom ack-command "ack "
   "The default ack command for \\[ack].
 
 Note also options to ack can be specified in ACK_OPTIONS
@@ -139,15 +140,35 @@ This gets tacked on the end of the generated expressions.")
        ack-regexp-alist)
   (add-hook 'compilation-filter-hook 'ack-filter nil t))
 
+(defun ack-skel-file ()
+  "Insert a template for case-insensitive filename search."
+  (interactive)
+  (delete-minibuffer-contents)
+  (skeleton-insert '(nil "ack -g '(?i:" _ ")'")))
+
+(defvar ack-minibuffer-local-map
+  (let ((map (make-sparse-keymap)))
+    (set-keymap-parent map minibuffer-local-map)
+    (define-key map "\t" 'completion-at-point)
+    (define-key map "\M-I" 'ack-skel-file)
+    (define-key map "'" 'skeleton-pair-insert-maybe)
+    map)
+  "Keymap used for reading `ack' command and args in minibuffer.")
+
 ;;;###autoload
 (defun ack (command-args &optional directory)
   "Run ack using COMMAND-ARGS and collect output in a buffer.
 With prefix, ask for the DIRECTORY to run ack.
 
-\\{ack-mode-map}"
+The following keys are available while reading from the
+minibuffer:
+
+\\{ack-minibuffer-local-map}"
   (interactive
-   (list (read-from-minibuffer "Run ack (like this): "
-                               ack-command nil nil 'ack-history)
+   (list (minibuffer-with-setup-hook 'shell-completion-vars
+           (read-from-minibuffer "Run ack (like this): "
+                                 ack-command ack-minibuffer-local-map
+                                 nil 'ack-history))
          (and current-prefix-arg
               (read-directory-name "In directory: " nil nil t))))
   (let ((default-directory (expand-file-name
