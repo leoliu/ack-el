@@ -36,6 +36,17 @@
   :group 'tools
   :group 'processes)
 
+(defcustom ack-project-pattern-list
+  (list (concat "\\`" (regexp-quote dir-locals-file) "\\'")
+        "\\`Project\\.ede\\'"
+        "\\.xcodeproj\\'"         ; xcode
+        "\\`\\.ropeproject\\'"    ; python rope
+        ;; ".git" ".svn" ".hg" ".bzr" ".CVS"
+        "\\`\\.\\(?:CVS\\|bzr\\|git\\|hg\\|svn\\)\\'")
+  "A list of regexps that match files in a project root."
+  :type '(repeat string)
+  :group 'ack)
+
 ;; Used implicitly by `define-compilation-mode'
 (defcustom ack-scroll-output nil
   "Similar to `compilation-scroll-output' but for the *Ack* buffer."
@@ -155,10 +166,21 @@ This gets tacked on the end of the generated expressions.")
     map)
   "Keymap used for reading `ack' command and args in minibuffer.")
 
+(defun ack-guess-project-root (start-directory &optional regexp)
+  (let ((regexp (or regexp
+                    (mapconcat 'identity ack-project-pattern-list "\\|")))
+        (parent (file-name-directory
+                 (directory-file-name (expand-file-name start-directory)))))
+    (if (directory-files start-directory nil regexp)
+        start-directory
+      (unless (equal parent start-directory)
+        (ack-guess-project-root parent regexp)))))
+
 ;;;###autoload
 (defun ack (command-args &optional directory)
   "Run ack using COMMAND-ARGS and collect output in a buffer.
-With prefix, ask for the DIRECTORY to run ack.
+With prefix, ask for the DIRECTORY to run ack; otherwise the
+current project root is used.
 
 The following keys are available while reading from the
 minibuffer:
@@ -169,8 +191,9 @@ minibuffer:
            (read-from-minibuffer "Run ack (like this): "
                                  ack-command ack-minibuffer-local-map
                                  nil 'ack-history))
-         (and current-prefix-arg
-              (read-directory-name "In directory: " nil nil t))))
+         (if current-prefix-arg
+             (read-directory-name "In directory: " nil nil t)
+           (ack-guess-project-root default-directory))))
   (let ((default-directory (expand-file-name
                             (or directory default-directory))))
     (compilation-start command-args 'ack-mode)))
