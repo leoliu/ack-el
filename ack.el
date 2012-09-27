@@ -28,8 +28,9 @@
 ;;; Code:
 
 (require 'compile)
-(require 'ansi-color)
-(autoload 'shell-completion-vars "shell")
+(when (>= emacs-major-version 24)
+  (require 'ansi-color)
+  (autoload 'shell-completion-vars "shell"))
 
 (defgroup ack nil
   "Run `ack' and display the results."
@@ -53,7 +54,9 @@
   :type 'boolean
   :group 'ack)
 
-(defcustom ack-command "ack "
+(defcustom ack-command (if (>= emacs-major-version 24)
+                           "ack "
+                         "ack --nocolor ")
   "The default ack command for \\[ack].
 
 Note also options to ack can be specified in ACK_OPTIONS
@@ -100,6 +103,10 @@ This function is called from `compilation-filter-hook'."
      (2 'compilation-error nil t)))
   "Additional things to highlight in ack output.
 This gets tacked on the end of the generated expressions.")
+
+(when (< emacs-major-version 24)
+  (defvar ack--column-start 'ack--column-start)
+  (defvar ack--column-end 'ack--column-end))
 
 (defun ack--column-start ()
   (let* ((beg (match-end 0))
@@ -149,7 +156,8 @@ This gets tacked on the end of the generated expressions.")
        'compilation-info)
   (set (make-local-variable 'compilation-error-regexp-alist)
        ack-regexp-alist)
-  (add-hook 'compilation-filter-hook 'ack-filter nil t))
+  (when (boundp 'compilation-filter-hook)
+    (add-hook 'compilation-filter-hook 'ack-filter nil t)))
 
 (defun ack-skel-file ()
   "Insert a template for case-insensitive filename search."
@@ -160,7 +168,9 @@ This gets tacked on the end of the generated expressions.")
 (defvar ack-minibuffer-local-map
   (let ((map (make-sparse-keymap)))
     (set-keymap-parent map minibuffer-local-map)
-    (define-key map "\t" 'completion-at-point)
+    (define-key map "\t" (if (>= emacs-major-version 24)
+                             'completion-at-point
+                           'pcomplete))
     (define-key map "\M-I" 'ack-skel-file)
     (define-key map "'" 'skeleton-pair-insert-maybe)
     map)
@@ -187,7 +197,9 @@ minibuffer:
 
 \\{ack-minibuffer-local-map}"
   (interactive
-   (list (minibuffer-with-setup-hook 'shell-completion-vars
+   (list (minibuffer-with-setup-hook (if (>= emacs-major-version 24)
+                                         'shell-completion-vars
+                                       'pcomplete-shell-setup)
            (read-from-minibuffer "Run ack (like this): "
                                  ack-command ack-minibuffer-local-map
                                  nil 'ack-history))
