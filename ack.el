@@ -78,6 +78,9 @@ environment variable and ~/.ackrc, which you can disable by the
 (defvar ack-first-column 0
   "Value to use for `compilation-first-column' in ack buffers.")
 
+(defvar ack-error-screen-columns nil
+  "Value to use for `compilation-error-screen-columns' in ack buffers.")
+
 ;; Used implicitly by `define-compilation-mode'
 (defvar ack-error "ack match"
   "Stem of message to print when no matches are found.")
@@ -114,12 +117,18 @@ This gets tacked on the end of the generated expressions.")
   (defvar ack--column-end 'ack--column-end))
 
 (defun ack--column-start ()
-  (let* ((beg (match-end 0))
-         (end (save-excursion
-                (goto-char beg)
-                (line-end-position)))
-         (mbeg (text-property-any beg end 'ack-color t)))
-    (when mbeg (- mbeg beg))))
+  (or (let* ((beg (match-end 0))
+             (end (save-excursion
+                    (goto-char beg)
+                    (line-end-position)))
+             (mbeg (text-property-any beg end 'ack-color t)))
+        (when mbeg (- mbeg beg)))
+      ;; Use column number from `ack' itself if available
+      (when (match-string 4)
+        (put-text-property (match-beginning 4)
+                           (match-end 4)
+                           'font-lock-face compilation-column-face)
+        (1- (string-to-number (match-string 4))))))
 
 (defun ack--column-end ()
   (let* ((beg (match-end 0))
@@ -146,10 +155,10 @@ This gets tacked on the end of the generated expressions.")
 
 (defconst ack-regexp-alist
   '(;; grouping line (--group or --heading)
-    ("^\\([1-9][0-9]*\\)\\(:\\|-\\)\\(?:[1-9][0-9]*\\2\\)?"
+    ("^\\([1-9][0-9]*\\)\\(:\\|-\\)\\(?:\\(?4:[1-9][0-9]*\\)\\2\\)?"
      ack--file 1 (ack--column-start . ack--column-end))
     ;; none grouping line (--nogroup or --noheading)
-    ("^\\(.+?\\)\\(:\\|-\\)\\([1-9][0-9]*\\)\\2\\(?:\\([1-9][0-9]*\\)\\2\\)?"
+    ("^\\(.+?\\)\\(:\\|-\\)\\([1-9][0-9]*\\)\\2\\(?:\\(?4:[1-9][0-9]*\\)\\2\\)?"
      1 3 (ack--column-start . ack--column-end))
     ("^Binary file \\(.+\\) matches$" 1 nil nil 0 1))
   "Ack version of `compilation-error-regexp-alist' (which see).")
