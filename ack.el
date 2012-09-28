@@ -147,10 +147,14 @@ This gets tacked on the end of the generated expressions.")
                (forward-line -1)
                (looking-at-p "^--$")))
       (setq file (or (get-text-property (line-beginning-position) 'ack-file)
-                     (buffer-substring-no-properties
-                      (line-beginning-position) (line-end-position)))))
+                     (progn
+                       (put-text-property (line-beginning-position)
+                                          (line-end-position)
+                                          'font-lock-face compilation-info-face)
+                       (buffer-substring-no-properties
+                        (line-beginning-position) (line-end-position))))))
     (put-text-property (line-beginning-position)
-                       (1+ (line-end-position)) 'ack-file file)
+                       (min (1+ (line-end-position)) (point-max)) 'ack-file file)
     (list file)))
 
 (defconst ack-regexp-alist
