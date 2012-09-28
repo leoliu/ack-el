@@ -168,7 +168,8 @@ This gets tacked on the end of the generated expressions.")
   "Insert a template for case-insensitive filename search."
   (interactive)
   (delete-minibuffer-contents)
-  (skeleton-insert '(nil "ack -g '(?i:" _ ")'")))
+  (let ((ack (or (car (split-string ack-command nil t)) "ack")))
+    (skeleton-insert '(nil ack " -g '(?i:" _ ")'"))))
 
 (defvar ack-minibuffer-local-map
   (let ((map (make-sparse-keymap)))

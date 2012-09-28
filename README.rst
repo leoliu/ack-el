@@ -29,6 +29,7 @@ Completion
 Place ``pcmpl-ack.el`` in the ``load-path`` and add::
 
   (autoload 'pcomplete/ack "pcmpl-ack")
+  (autoload 'pcomplete/ack-grep "pcmpl-ack")
 
 to your init file. After this you will be able complete ``ack``
 options while ``M-x ack`` or in shell/eshell.
@@ -45,3 +46,7 @@ key bindings may be useful:
 
 #. ``M-I`` => insert a template for case-insensitive file name search
 #. ``TAB`` => completion for ack options
+
+Contributors
+------------
+Phillip Lord

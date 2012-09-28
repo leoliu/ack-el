@@ -152,5 +152,8 @@ long options."
          (t (pcomplete-opt pcmpl-ack-short-options)))
       (pcomplete-here* (pcomplete-dirs-or-entries)))))
 
+;;;###autoload
+(defalias 'pcomplete/ack-grep 'pcomplete/ack)
+
 (provide 'pcmpl-ack)
 ;;; pcmpl-ack.el ends here
