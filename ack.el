@@ -54,9 +54,14 @@
   :type 'boolean
   :group 'ack)
 
-(defcustom ack-command (if (>= emacs-major-version 24)
-                           "ack "
-                         "ack --nocolor ")
+(defcustom ack-command
+  ;; Note: on GNU/Linux ack may be renamed to ack-grep
+  (let ((ack (or (executable-find "ack-grep")
+                 (executable-find "ack")
+                 "ack"))
+        (args (when (< emacs-major-version 24)
+                "--nocolor ")))
+    (concat (file-name-nondirectory ack) " " args))
   "The default ack command for \\[ack].
 
 Note also options to ack can be specified in ACK_OPTIONS
