@@ -60,7 +60,7 @@
                  (executable-find "ack")
                  "ack"))
         (args (when (< emacs-major-version 24)
-                "--nocolor --column ")))
+                "--nocolor ")))
     (concat (file-name-nondirectory ack) " " args))
   "The default ack command for \\[ack].
 
@@ -158,12 +158,12 @@ This gets tacked on the end of the generated expressions.")
     (list file)))
 
 (defconst ack-regexp-alist
-  '(;; none grouping line (--nogroup or --noheading)
-    ("^\\(.+?\\)\\(:\\|-\\)\\([1-9][0-9]*\\)\\2\\(?:\\(?4:[1-9][0-9]*\\)\\2\\)?"
-     1 3 (ack--column-start . ack--column-end))
-    ;; grouping line (--group or --heading)
+  '(;; grouping line (--group or --heading)
     ("^\\([1-9][0-9]*\\)\\(:\\|-\\)\\(?:\\(?4:[1-9][0-9]*\\)\\2\\)?"
      ack--file 1 (ack--column-start . ack--column-end))
+    ;; none grouping line (--nogroup or --noheading)
+    ("^\\(.+?\\)\\(:\\|-\\)\\([1-9][0-9]*\\)\\2\\(?:\\(?4:[1-9][0-9]*\\)\\2\\)?"
+     1 3 (ack--column-start . ack--column-end))
     ("^Binary file \\(.+\\) matches$" 1 nil nil 0 1))
   "Ack version of `compilation-error-regexp-alist' (which see).")
 
