@@ -122,9 +122,6 @@ This gets tacked on the end of the generated expressions.")
         (when mbeg (- mbeg beg)))
       ;; Use column number from `ack' itself if available
       (when (match-string 4)
-        (put-text-property (match-beginning 4)
-                           (match-end 4)
-                           'font-lock-face compilation-column-face)
         (1- (string-to-number (match-string 4))))))
 
 (defun ack--column-end ()
@@ -171,10 +168,12 @@ This gets tacked on the end of the generated expressions.")
 (defconst ack-regexp-alist
   '(;; grouping line (--group or --heading)
     ("^\\([1-9][0-9]*\\)\\(:\\|-\\)\\(?:\\(?4:[1-9][0-9]*\\)\\2\\)?"
-     ack--file 1 (ack--column-start . ack--column-end))
+     ack--file 1 (ack--column-start . ack--column-end)
+     nil nil (4 compilation-column-face nil t))
     ;; none grouping line (--nogroup or --noheading)
     ("^\\(.+?\\)\\(:\\|-\\)\\([1-9][0-9]*\\)\\2\\(?:\\(?4:[1-9][0-9]*\\)\\2\\)?"
-     1 3 (ack--column-start . ack--column-end))
+     1 3 (ack--column-start . ack--column-end)
+     nil nil (4 compilation-column-face nil t))
     ("^Binary file \\(.+\\) matches$" 1 nil nil 0 1))
   "Ack version of `compilation-error-regexp-alist' (which see).")
 
