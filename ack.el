@@ -28,8 +28,8 @@
 ;;; Code:
 
 (require 'compile)
+(require 'ansi-color)
 (when (>= emacs-major-version 24)
-  (require 'ansi-color)
   (autoload 'shell-completion-vars "shell"))
 
 (defgroup ack nil
@@ -56,12 +56,9 @@
 
 (defcustom ack-command
   ;; Note: on GNU/Linux ack may be renamed to ack-grep
-  (let ((ack (or (executable-find "ack-grep")
-                 (executable-find "ack")
-                 "ack"))
-        (args (when (< emacs-major-version 24)
-                "--nocolor ")))
-    (concat (file-name-nondirectory ack) " " args))
+  (concat (file-name-nondirectory (or (executable-find "ack-grep")
+                                      (executable-find "ack")
+                                      "ack")) " ")
   "The default ack command for \\[ack].
 
 Note also options to ack can be specified in ACK_OPTIONS
@@ -181,6 +178,8 @@ This gets tacked on the end of the generated expressions.")
     ("^Binary file \\(.+\\) matches$" 1 nil nil 0 1))
   "Ack version of `compilation-error-regexp-alist' (which see).")
 
+(defvar ack--ansi-color-last-marker)
+
 (define-compilation-mode ack-mode "Ack"
   "A compilation mode tailored for ack."
   (set (make-local-variable 'compilation-disable-input) t)
@@ -188,8 +187,16 @@ This gets tacked on the end of the generated expressions.")
        'compilation-info)
   (set (make-local-variable 'compilation-error-regexp-alist)
        ack-regexp-alist)
-  (when (boundp 'compilation-filter-hook)
-    (add-hook 'compilation-filter-hook 'ack-filter nil t)))
+  (if (>= emacs-major-version 24)
+      (add-hook 'compilation-filter-hook 'ack-filter nil t)
+    (set (make-local-variable 'ack--ansi-color-last-marker)
+         (point-min-marker))
+    (font-lock-add-keywords
+     nil '(((lambda (limit)
+              (let ((beg (marker-position ack--ansi-color-last-marker)))
+                (move-marker ack--ansi-color-last-marker limit)
+                (ansi-color-apply-on-region beg ack--ansi-color-last-marker))
+              nil))))))
 
 (defun ack-skel-file ()
   "Insert a template for case-insensitive filename search."
