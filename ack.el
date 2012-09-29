@@ -165,7 +165,7 @@ This gets tacked on the end of the generated expressions.")
 ;;; both regexps in `ack-regexp-alist' and this fails emacs-23 in
 ;;; finding the right file.
 
-(defconst ack-regexp-alist
+(defconst ack-error-regexp-alist
   '(;; grouping line (--group or --heading)
     ("^\\([1-9][0-9]*\\)\\(:\\|-\\)\\(?:\\(?4:[1-9][0-9]*\\)\\2\\)?"
      ack--file 1 (ack--column-start . ack--column-end)
@@ -184,8 +184,6 @@ This gets tacked on the end of the generated expressions.")
   (set (make-local-variable 'compilation-disable-input) t)
   (set (make-local-variable 'compilation-error-face)
        'compilation-info)
-  (set (make-local-variable 'compilation-error-regexp-alist)
-       ack-regexp-alist)
   (if (>= emacs-major-version 24)
       (add-hook 'compilation-filter-hook 'ack-filter nil t)
     (set (make-local-variable 'ack--ansi-color-last-marker)
