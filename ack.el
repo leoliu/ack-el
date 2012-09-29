@@ -157,6 +157,20 @@ This gets tacked on the end of the generated expressions.")
                        (min (1+ (line-end-position)) (point-max)) 'ack-file file)
     (list file)))
 
+;;; In emacs-24 and above, `compilation-mode-font-lock-keywords' ->
+;;; `compilation--ensure-parse' -> `compilation--parse-region' ->
+;;; `compilation-parse-errors' -> `compilation-error-properties'.
+;;; `compilation-error-properties' returns nil if a previous pattern
+;;; in the regexp alist has already been applied in a region.
+;;;
+;;; In emacs-23, `ack-regexp-alist' is a part of `font-lock-keywords'
+;;; after some transformation, so later entries can override earlier
+;;; entries.
+;;;
+;;; The output of 'ack --nocolor --group --column WHATEVER' matches
+;;; both regexps in `ack-regexp-alist' and this fails emacs-23 in
+;;; finding the right file.
+
 (defconst ack-regexp-alist
   '(;; grouping line (--group or --heading)
     ("^\\([1-9][0-9]*\\)\\(:\\|-\\)\\(?:\\(?4:[1-9][0-9]*\\)\\2\\)?"
