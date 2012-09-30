@@ -99,11 +99,11 @@ This function is called from `compilation-filter-hook'."
     ;; Command output lines.
     (": \\(.+\\): \\(?:Permission denied\\|No such \\(?:file or directory\\|device or address\\)\\)$"
      1 'compilation-error)
-    ;; remove match from ack-regexp-alist before fontifying
-    ("^Ack \\(?:started\\|finished at\\).*"
-     (0 '(face nil compilation-message nil help-echo nil mouse-face nil) t))
+    ;; Remove match from ack-error-regexp-alist before fontifying
+    ("^Ack \\(?:started\\|finished\\) at.*"
+     (0 '(face nil compilation-message nil message nil help-echo nil mouse-face nil) t))
     ("^Ack \\(exited abnormally\\|interrupt\\|killed\\|terminated\\)\\(?:.*with code \\([0-9]+\\)\\)?.*"
-     (0 '(face nil compilation-message nil help-echo nil mouse-face nil) t)
+     (0 '(face nil compilation-message nil message nil help-echo nil mouse-face nil) t)
      (1 'compilation-error)
      (2 'compilation-error nil t)))
   "Additional things to highlight in ack output.
