@@ -48,6 +48,15 @@
   :type '(repeat string)
   :group 'ack)
 
+(defcustom ack-vc-grep-commands
+  '((".git" . "git --no-pager grep -i -n --color")
+    ;; (".bzr" . "bzr grep")
+    (".hg" . "hg grep -i -n"))
+  "An alist of vc grep commands for `ack-skel-vc-grep'.
+Each element is of the form (VC_DIR . CMD)."
+  :type '(repeat (cons string string))
+  :group 'ack)
+
 ;; Used implicitly by `define-compilation-mode'
 (defcustom ack-scroll-output nil
   "Similar to `compilation-scroll-output' but for the *Ack* buffer."
@@ -207,6 +216,22 @@ This gets tacked on the end of the generated expressions.")
 
 (defvar ack--ansi-color-last-marker)
 
+(defvar ack-process-setup-function 'ack-process-setup)
+
+(defun ack-process-setup ()
+  (when (string-match-p "^[ \t]*hg[ \t]" (car compilation-arguments))
+    (setq compilation-error-regexp-alist
+          '(("^\\(.+?:[0-9]+:\\)\\(?:\\([0-9]+\\):\\)?" 1 2)))
+    (when (< emacs-major-version 24)
+      (setq font-lock-keywords (compilation-mode-font-lock-keywords)))
+    (make-local-variable 'compilation-parse-errors-filename-function)
+    (setq compilation-parse-errors-filename-function
+          (lambda (file)
+            (save-match-data
+              (if (string-match "\\(.+\\):\\([0-9]+\\):" file)
+                  (match-string 1 file)
+                file))))))
+
 (define-compilation-mode ack-mode "Ack"
   "A compilation mode tailored for ack."
   (set (make-local-variable 'compilation-disable-input) t)
@@ -230,6 +255,24 @@ This gets tacked on the end of the generated expressions.")
   (let ((ack (or (car (split-string ack-command nil t)) "ack")))
     (skeleton-insert '(nil ack " -g '(?i:" _ ")'"))))
 
+(defvar project-root)                   ; dynamically bound in `ack'
+
+(defun ack-skel-vc-grep ()
+  "Insert a template for vc grep search."
+  (interactive)
+  (let* ((regexp (concat "\\`" (regexp-opt
+                                (mapcar 'car ack-vc-grep-commands))
+                         "\\'"))
+         (root (or (ack-guess-project-root default-directory regexp)
+                   (error "Cannot locate vc project root")))
+         (which (car (directory-files root nil regexp)))
+         (cmd (or (cdr (assoc which ack-vc-grep-commands))
+                  (error "No command provided for `%s grep'"
+                         (substring which 1)))))
+    (setq project-root root)
+    (delete-minibuffer-contents)
+    (skeleton-insert '(nil cmd " '" _ "'"))))
+
 (defvar ack-minibuffer-local-map
   (let ((map (make-sparse-keymap)))
     (set-keymap-parent map minibuffer-local-map)
@@ -237,6 +280,7 @@ This gets tacked on the end of the generated expressions.")
                              'completion-at-point
                            'pcomplete))
     (define-key map "\M-I" 'ack-skel-file)
+    (define-key map "\M-G" 'ack-skel-vc-grep)
     (define-key map "'" 'skeleton-pair-insert-maybe)
     map)
   "Keymap used for reading `ack' command and args in minibuffer.")
@@ -262,15 +306,17 @@ minibuffer:
 
 \\{ack-minibuffer-local-map}"
   (interactive
-   (list (minibuffer-with-setup-hook (if (>= emacs-major-version 24)
-                                         'shell-completion-vars
-                                       'pcomplete-shell-setup)
-           (read-from-minibuffer "Run ack (like this): "
-                                 ack-command ack-minibuffer-local-map
-                                 nil 'ack-history))
-         (if current-prefix-arg
-             (read-directory-name "In directory: " nil nil t)
-           (ack-guess-project-root default-directory))))
+   (let ((project-root))
+     (list (minibuffer-with-setup-hook (if (>= emacs-major-version 24)
+                                           'shell-completion-vars
+                                         'pcomplete-shell-setup)
+             (read-from-minibuffer "Run ack (like this): "
+                                   ack-command ack-minibuffer-local-map
+                                   nil 'ack-history))
+           (if current-prefix-arg
+               (read-directory-name "In directory: " nil nil t)
+             (or project-root
+                 (ack-guess-project-root default-directory))))))
   (let ((default-directory (expand-file-name
                             (or directory default-directory))))
     (compilation-start command-args 'ack-mode)))
