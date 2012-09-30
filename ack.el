@@ -151,6 +151,35 @@ This gets tacked on the end of the generated expressions.")
                        (min (1+ (line-end-position)) (point-max)) 'ack-file file)
     (list file)))
 
+;;; For emacs < 24
+(when (< emacs-major-version 24)
+  (defun ack--line (file col)
+    (if (string-match-p "\\`[1-9][0-9]*\\'" (car file))
+        (let ((has-ansi-color (overlays-at (match-beginning 1))))
+          ;; See `compilation-mode-font-lock-keywords' where there is
+          ;; overriding font-locking of FILE. Thus use the display
+          ;; property here to avoid being overridden.
+          (put-text-property
+           (match-beginning 1) (match-end 1)
+           'display
+           (propertize (match-string-no-properties 1)
+                       'face (list (and (not has-ansi-color)
+                                        compilation-line-face)
+                                   :weight 'normal :inherit 'underline)))
+          (list nil (ack--file)
+                (string-to-number (match-string 1))
+                (1- (string-to-number (match-string 3)))))
+      (put-text-property (match-beginning 3)
+                         (match-end 3)
+                         'font-lock-face compilation-line-face)
+      (list nil file
+            (string-to-number (match-string 3))
+            (when (match-string 4)
+              (put-text-property (match-beginning 4)
+                                 (match-end 4)
+                                 'font-lock-face compilation-column-face)
+              (1- (string-to-number (match-string 4))))))))
+
 ;;; In emacs-24 and above, `compilation-mode-font-lock-keywords' ->
 ;;; `compilation--ensure-parse' -> `compilation--parse-region' ->
 ;;; `compilation-parse-errors' -> `compilation-error-properties'.
@@ -161,19 +190,21 @@ This gets tacked on the end of the generated expressions.")
 ;;; after some transformation, so later entries can override earlier
 ;;; entries.
 ;;;
-;;; The output of 'ack --nocolor --group --column WHATEVER' matches
-;;; both regexps in `ack-regexp-alist' and this fails emacs-23 in
-;;; finding the right file.
+;;; The output of 'ack --group --column WHATEVER' matches both regexps
+;;; in `ack-regexp-alist' and this fails emacs-23 in finding the right
+;;; file. So ack--line is used to disambiguate this case.
 
 (defconst ack-error-regexp-alist
-  '(;; grouping line (--group or --heading)
+  `(;; grouping line (--group or --heading)
     ("^\\([1-9][0-9]*\\)\\(:\\|-\\)\\(?:\\(?4:[1-9][0-9]*\\)\\2\\)?"
      ack--file 1 (ack--column-start . ack--column-end)
      nil nil (4 compilation-column-face nil t))
     ;; none grouping line (--nogroup or --noheading)
     ("^\\(.+?\\)\\(:\\|-\\)\\([1-9][0-9]*\\)\\2\\(?:\\(?4:[1-9][0-9]*\\)\\2\\)?"
-     1 3 (ack--column-start . ack--column-end)
-     nil nil (4 compilation-column-face nil t))
+     ,@(if (>= emacs-major-version 24)
+           '(1 3 (ack--column-start . ack--column-end)
+               nil nil (4 compilation-column-face nil t))
+         '(1 ack--line 4)))
     ("^Binary file \\(.+\\) matches$" 1 nil nil 0 1))
   "Ack version of `compilation-error-regexp-alist' (which see).")
 
