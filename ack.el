@@ -5,7 +5,7 @@
 ;; Author: Leo Liu <sdl.web@gmail.com>
 ;; Keywords: tools, processes, convenience
 ;; Created: 2012-03-24
-;; Version: 0.6
+;; Version: 0.7
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -71,14 +71,12 @@ environment variable and ~/.ackrc, which you can disable by the
 
 (defvar ack-history nil "History list for ack.")
 
-;; Used implicitly by `define-compilation-mode'
 (defvar ack-first-column 0
   "Value to use for `compilation-first-column' in ack buffers.")
 
 (defvar ack-error-screen-columns nil
   "Value to use for `compilation-error-screen-columns' in ack buffers.")
 
-;; Used implicitly by `define-compilation-mode'
 (defvar ack-error "ack match"
   "Stem of message to print when no matches are found.")
 
@@ -93,7 +91,6 @@ This function is called from `compilation-filter-hook'."
                (put-text-property beg end 'ack-color t)))))
       (ansi-color-apply-on-region compilation-filter-start (point)))))
 
-;; Used implicitly by `define-compilation-mode'
 (defvar ack-mode-font-lock-keywords
   '(("^--$" 0 'shadow)
     ;; Command output lines.
