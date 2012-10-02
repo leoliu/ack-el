@@ -30,80 +30,21 @@
 ;; Usage:
 ;;   - To complete short options type '-' first
 ;;   - To complete long options type '--' first
-;;   - Color name completion is also supported following
-;;       --color-filename=, --color-match= and --color-lineno=.
+;;   - Color name completion is supported following
+;;       --color-filename=, --color-match= and --color-lineno=
+;;   - Type completion is supported following --type=
 
 ;;; Code:
 
 (require 'pcomplete)
 
-(defvar pcmpl-ack-short-options
-  (mapconcat (lambda (o) (substring o 1))
-             '("-a" "-A" "-B" "-C" "-c" "-f" "-G" "-g"
-               "-H" "-h" "-i" "-l" "-L" "-m" "-n"
-               "-o" "-Q" "-r" "-R"
-               "-u" "-v" "-w" "-1")
-             "")
-  "Short options for the `ack' command.")
-
-(defvar pcmpl-ack-long-options
-  '("--after-context="
-    "--all-types"
-    "--before-context="
-    "--break"
-    "--nobreak"
-    "--color"
-    "--nocolor"
-    "--colour"
-    "--nocolour"
-    "--color-filename="
-    "--color-match="
-    "--color-lineno="
-    "--column"
-    "--context="
-    "--count"
-    "--env"
-    "--noenv"
-    "--files-with-matches"
-    "--files-without-matches"
-    "--flush"
-    "--follow"
-    "--nofollow"
-    "--group"
-    "--nogroup"
-    "--heading"
-    "--noheading"
-    "--ignore-case"
-    "--ignore-dir="
-    "--noignore-dir="
-    "--invert-match"
-    "--line="
-    "--literal"
-    "--match"
-    "--max-count="
-    "--no-filename"
-    "--output="
-    "--pager="
-    "--nopager"
-    "--passthru"
-    "--print0"
-    "--recurse"
-    "--norecurse"
-    "--smart-case"
-    "--nosmart-case"
-    "--sort-files"
-    "--type="
-    "--type-add"
-    "--type-set"
-    "--unrestricted"
-    "--with-filename"
-    "--word-regexp"
-    "--help"
-    "--help-types"
-    "--man"
-    "--thpppt"
-    "--version")
-  "Long options for the `ack' command.")
+(defcustom pcmpl-ack-program
+  (file-name-nondirectory (or (executable-find "ack-grep")
+                              (executable-find "ack")
+                              "ack"))
+  "Name of the ack program."
+  :type 'file
+  :group 'pcomplete)
 
 (defvar pcmpl-ack-color-options
   '("clear"
@@ -131,13 +72,47 @@
     "on_white")
   "Color names for the `ack' command.")
 
+(defun pcmpl-ack-run (buffer &rest args)
+  "Run ack with ARGS and send the output to BUFFER."
+  (condition-case nil
+      (apply 'call-process (or pcmpl-ack-program "ack") nil buffer nil args)
+    (file-error -1)))
+
+(defun pcmpl-ack-short-options ()
+  "Short options for the `ack' command."
+  (with-temp-buffer
+    (let (options)
+      (when (zerop (pcmpl-ack-run t "--help"))
+        (goto-char (point-min))
+        (while (re-search-forward "^  -\\([^-]\\)" nil t)
+          (push (match-string 1) options))
+        (mapconcat 'identity (nreverse options) "")))))
+
+(defun pcmpl-ack-long-options (&optional arg)
+  "Long options for the `ack' command."
+  (with-temp-buffer
+    (let (options)
+      (when (zerop (pcmpl-ack-run t (or arg "--help")))
+        (goto-char (point-min))
+        (while (re-search-forward
+                "\\(?:   ?\\|, \\)\\(--\\(\\[no\\]\\)?\\([[:alnum:]-]+=?\\)\\)"
+                nil t)
+          (if (not (match-string 2))
+              (push (match-string 1) options)
+            (push (concat "--" (match-string 3)) options)
+            (push (concat "--no" (match-string 3)) options)))
+        (nreverse options)))))
+
+(defun pcmpl-ack-type-options ()
+  "A list of types for the `ack' command."
+  (pcmpl-ack-long-options "--help-types"))
+
 ;;;###autoload
 (defun pcomplete/ack ()
   "Completion for the `ack' command.
 Start an argument with '-' to complete short options and '--' for
 long options."
   ;; No space after =
-  (add-to-list 'pcomplete-suffix-list ?=)
   (while t
     (if (pcomplete-match "^-" 0)
         (cond
@@ -147,9 +122,15 @@ long options."
          ((pcomplete-match "^--\\(?:no\\)?ignore-dir=\\(\\S-*\\)" 0)
           (pcomplete-here* (pcomplete-dirs)
                            (pcomplete-match-string 1 0) t))
+         ((pcomplete-match "^--type=\\(\\S-*\\)" 0)
+          (pcomplete-here* (mapcar (lambda (type-option)
+                                     (substring type-option 2))
+                                   (pcmpl-ack-type-options))
+                           (pcomplete-match-string 1 0) t))
          ((pcomplete-match "^--" 0)
-          (pcomplete-here* pcmpl-ack-long-options))
-         (t (pcomplete-opt pcmpl-ack-short-options)))
+          (pcomplete-here* (append (pcmpl-ack-long-options)
+                                   (pcmpl-ack-type-options))))
+         (t (pcomplete-opt (pcmpl-ack-short-options))))
       (pcomplete-here* (pcomplete-dirs-or-entries)))))
 
 ;;;###autoload
