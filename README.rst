@@ -18,10 +18,18 @@ Features
 - Neither ``--nogroup`` nor ``--noheading`` is required
 - Handle colors using the standard library ``ansi-color.el``
 - Completion for ack options while reading from the minibuffer
+- Support ``git grep`` and ``hg grep``
 - Support both emacs 23 and 24
 
 Screenshots
 -----------
+
+.. figure:: http://i.imgur.com/mrk8k.png
+   :width: 400 px
+   :target: http://i.imgur.com/mrk8k.png
+   :alt: ack-git-grep.png
+
+   ``git --no-pager grep -n --color 'hg grep'``
 
 .. figure:: http://i.imgur.com/a72Ap.png
    :width: 400 px
@@ -48,8 +56,8 @@ or::
 
  (autoload 'ack "ack" nil t)
 
-Completion
-~~~~~~~~~~
+Completion (optional)
+~~~~~~~~~~~~~~~~~~~~~
 
 Place ``pcmpl-ack.el`` in the ``load-path`` and add::
 
@@ -70,6 +78,7 @@ While reading ack command and args from the minibuffer, the following
 key bindings may be useful:
 
 - ``M-I`` => insert a template for case-insensitive file name search
+- ``M-G`` => insert a template for ``git grep`` or ``hg grep``
 - ``TAB`` => completion for ack options
 
 Contributors
