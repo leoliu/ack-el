@@ -306,7 +306,9 @@ minibuffer:
 
 \\{ack-minibuffer-local-map}"
   (interactive
-   (let ((project-root))
+   (let ((project-root)
+         ;; Disable completion cycling; see http://debbugs.gnu.org/12221
+         (completion-cycle-threshold nil))
      (list (minibuffer-with-setup-hook (if (>= emacs-major-version 24)
                                            'shell-completion-vars
                                          'pcomplete-shell-setup)
