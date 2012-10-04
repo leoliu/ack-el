@@ -3,9 +3,10 @@
 ;; Copyright (C) 2012  Leo Liu
 
 ;; Author: Leo Liu <sdl.web@gmail.com>
+;; Version: 0.8
 ;; Keywords: tools, processes, convenience
 ;; Created: 2012-03-24
-;; Version: 0.7
+;; URL: https://github.com/leoliu/ack-el
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by

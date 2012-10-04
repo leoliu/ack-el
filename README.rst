@@ -1,7 +1,7 @@
 ==========================================
  Emacs Interface to command-line tool ack
 ==========================================
- 
+
 From http://betterthangrep.com/
 
     ack is a tool like grep, designed for programmers with large trees
@@ -9,6 +9,8 @@ From http://betterthangrep.com/
 
     ack is written purely in Perl, and takes advantage of the power of
     Perl's regular expressions.
+
+This package is part of `GNU ELPA <http://elpa.gnu.org>`_.
 
 Feature requests and bug reports are welcome. Thanks.
 
@@ -80,6 +82,11 @@ key bindings may be useful:
 - ``M-I`` => insert a template for case-insensitive file name search
 - ``M-G`` => insert a template for ``git grep``, ``hg grep`` or ``bzr grep``
 - ``TAB`` => completion for ack options
+
+Bugs
+----
+
+https://github.com/leoliu/ack-el/issues
 
 Contributors
 ------------
