@@ -18,7 +18,7 @@ Features
 - Neither ``--nogroup`` nor ``--noheading`` is required
 - Handle colors using the standard library ``ansi-color.el``
 - Completion for ack options while reading from the minibuffer
-- Support ``git grep`` and ``hg grep``
+- Support ``git grep``, ``hg grep`` and ``bzr grep``
 - Support both emacs 23 and 24
 
 Screenshots
@@ -78,7 +78,7 @@ While reading ack command and args from the minibuffer, the following
 key bindings may be useful:
 
 - ``M-I`` => insert a template for case-insensitive file name search
-- ``M-G`` => insert a template for ``git grep`` or ``hg grep``
+- ``M-G`` => insert a template for ``git grep``, ``hg grep`` or ``bzr grep``
 - ``TAB`` => completion for ack options
 
 Contributors

@@ -57,9 +57,10 @@ environment variable and ~/.ackrc, which you can disable by the
   :group 'ack)
 
 (defcustom ack-vc-grep-commands
-  '((".git" . "git --no-pager grep -i -n --color")
-    ;; (".bzr" . "bzr grep")
-    (".hg" . "hg grep -i -n"))
+  '((".git" . "git --no-pager grep --color -n -i")
+    (".hg" . "hg grep -n -i")
+    ;; Plugin bzr-grep required for bzr < 2.6
+    (".bzr" . "bzr grep --color=always -n -i"))
   "An alist of vc grep commands for `ack-skel-vc-grep'.
 Each element is of the form (VC_DIR . CMD)."
   :type '(repeat (cons string string))
@@ -225,6 +226,7 @@ This gets tacked on the end of the generated expressions.")
 (defvar ack-process-setup-function 'ack-process-setup)
 
 (defun ack-process-setup ()
+  ;; Handle `hg grep' output
   (when (string-match-p "^[ \t]*hg[ \t]" (car compilation-arguments))
     (setq compilation-error-regexp-alist
           '(("^\\(.+?:[0-9]+:\\)\\(?:\\([0-9]+\\):\\)?" 1 2)))
@@ -235,6 +237,16 @@ This gets tacked on the end of the generated expressions.")
           (lambda (file)
             (save-match-data
               (if (string-match "\\(.+\\):\\([0-9]+\\):" file)
+                  (match-string 1 file)
+                file)))))
+  ;; Handle `bzr grep' output
+  (when (string-match-p "^[ \t]*bzr[ \t]" (car compilation-arguments))
+    (make-local-variable 'compilation-parse-errors-filename-function)
+    (setq compilation-parse-errors-filename-function
+          (lambda (file)
+            (save-match-data
+              ;; 'bzr grep -r' has files like `termcolor.py~147'
+              (if (string-match "\\(.+\\)~\\([0-9]+\\)" file)
                   (match-string 1 file)
                 file))))))
 
