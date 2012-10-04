@@ -37,26 +37,6 @@
   :group 'tools
   :group 'processes)
 
-(defcustom ack-project-pattern-list
-  (list (concat "\\`" (regexp-quote dir-locals-file) "\\'")
-        "\\`Project\\.ede\\'"
-        "\\.xcodeproj\\'"         ; xcode
-        "\\`\\.ropeproject\\'"    ; python rope
-        ;; ".git" ".svn" ".hg" ".bzr" ".CVS"
-        "\\`\\.\\(?:CVS\\|bzr\\|git\\|hg\\|svn\\)\\'")
-  "A list of regexps that match files in a project root."
-  :type '(repeat string)
-  :group 'ack)
-
-(defcustom ack-vc-grep-commands
-  '((".git" . "git --no-pager grep -i -n --color")
-    ;; (".bzr" . "bzr grep")
-    (".hg" . "hg grep -i -n"))
-  "An alist of vc grep commands for `ack-skel-vc-grep'.
-Each element is of the form (VC_DIR . CMD)."
-  :type '(repeat (cons string string))
-  :group 'ack)
-
 ;; Used implicitly by `define-compilation-mode'
 (defcustom ack-scroll-output nil
   "Similar to `compilation-scroll-output' but for the *Ack* buffer."
@@ -74,6 +54,32 @@ Note also options to ack can be specified in ACK_OPTIONS
 environment variable and ~/.ackrc, which you can disable by the
 --noenv switch."
   :type 'string
+  :group 'ack)
+
+(defcustom ack-vc-grep-commands
+  '((".git" . "git --no-pager grep -i -n --color")
+    ;; (".bzr" . "bzr grep")
+    (".hg" . "hg grep -i -n"))
+  "An alist of vc grep commands for `ack-skel-vc-grep'.
+Each element is of the form (VC_DIR . CMD)."
+  :type '(repeat (cons string string))
+  :group 'ack)
+
+(defcustom ack-default-directory-function 'ack-default-directory
+  "A function to return the default directory for `ack'.
+It is called with one arg, the prefix arg to `ack'."
+  :type 'function
+  :group 'ack)
+
+(defcustom ack-project-root-patterns
+  (list (concat "\\`" (regexp-quote dir-locals-file) "\\'")
+        "\\`Project\\.ede\\'"
+        "\\.xcodeproj\\'"               ; xcode
+        "\\`\\.ropeproject\\'"          ; python rope
+        "\\`\\.\\(?:CVS\\|bzr\\|git\\|hg\\|svn\\)\\'")
+  "A list of regexps to match files in a project root.
+Used by `ack-guess-project-root'."
+  :type '(repeat string)
   :group 'ack)
 
 ;;; ======== END of USER OPTIONS ========
@@ -249,7 +255,7 @@ This gets tacked on the end of the generated expressions.")
               nil))))))
 
 (defun ack-skel-file ()
-  "Insert a template for case-insensitive filename search."
+  "Insert a template for case-insensitive file name search."
   (interactive)
   (delete-minibuffer-contents)
   (let ((ack (or (car (split-string ack-command nil t)) "ack")))
@@ -287,7 +293,7 @@ This gets tacked on the end of the generated expressions.")
 
 (defun ack-guess-project-root (start-directory &optional regexp)
   (let ((regexp (or regexp
-                    (mapconcat 'identity ack-project-pattern-list "\\|")))
+                    (mapconcat 'identity ack-project-root-patterns "\\|")))
         (parent (file-name-directory
                  (directory-file-name (expand-file-name start-directory)))))
     (if (directory-files start-directory nil regexp)
@@ -295,18 +301,32 @@ This gets tacked on the end of the generated expressions.")
       (unless (equal parent start-directory)
         (ack-guess-project-root parent regexp)))))
 
+(defun ack-default-directory (arg)
+  "A function for `ack-default-directory-function'.
+With no \\[universal-argument], return `default-directory';
+With one \\[universal-argument], find the project root according to
+`ack-project-root-patterns';
+Otherwise, interactively choose a directory."
+  (cond
+   ((not arg) default-directory)
+   ((= (prefix-numeric-value arg) 4)
+    (or (ack-guess-project-root default-directory)
+        (ack-default-directory '(16))))
+   (t (read-directory-name "In directory: " nil nil t))))
+
 ;;;###autoload
 (defun ack (command-args &optional directory)
   "Run ack using COMMAND-ARGS and collect output in a buffer.
-With prefix, ask for the DIRECTORY to run ack; otherwise the
-current project root is used.
+When called interactively, the value of DIRECTORY is provided by
+`ack-default-directory-function'.
 
 The following keys are available while reading from the
 minibuffer:
 
 \\{ack-minibuffer-local-map}"
   (interactive
-   (let ((project-root)
+   (let ((project-root (funcall ack-default-directory-function
+                                current-prefix-arg))
          ;; Disable completion cycling; see http://debbugs.gnu.org/12221
          (completion-cycle-threshold nil))
      (list (minibuffer-with-setup-hook (if (>= emacs-major-version 24)
@@ -315,10 +335,7 @@ minibuffer:
              (read-from-minibuffer "Run ack (like this): "
                                    ack-command ack-minibuffer-local-map
                                    nil 'ack-history))
-           (if current-prefix-arg
-               (read-directory-name "In directory: " nil nil t)
-             (or project-root
-                 (ack-guess-project-root default-directory))))))
+           project-root)))
   (let ((default-directory (expand-file-name
                             (or directory default-directory))))
     (compilation-start command-args 'ack-mode)))
