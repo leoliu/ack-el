@@ -267,6 +267,13 @@ This gets tacked on the end of the generated expressions.")
                 (ansi-color-apply-on-region beg ack--ansi-color-last-marker))
               nil))))))
 
+(defun ack-update-minibuffer-prompt (prompt)
+  "Visually replace minibuffer prompt with PROMPT."
+  (when (minibufferp)
+    (let ((inhibit-read-only t))
+      (put-text-property
+       (point-min) (minibuffer-prompt-end) 'display prompt))))
+
 (defun ack-skel-file ()
   "Insert a template for case-insensitive file name search."
   (interactive)
@@ -285,10 +292,13 @@ This gets tacked on the end of the generated expressions.")
          (root (or (ack-guess-project-root default-directory regexp)
                    (error "Cannot locate vc project root")))
          (which (car (directory-files root nil regexp)))
+         (backend (downcase (substring which 1)))
          (cmd (or (cdr (assoc which ack-vc-grep-commands))
-                  (error "No command provided for `%s grep'"
-                         (substring which 1)))))
+                  (error "No command provided for `%s grep'" backend))))
     (setq project-root root)
+    (ack-update-minibuffer-prompt
+     (format "Run %s grep in `%s': " backend
+             (file-name-nondirectory (directory-file-name project-root))))
     (delete-minibuffer-contents)
     (skeleton-insert '(nil cmd " '" _ "'"))))
 
@@ -338,16 +348,19 @@ minibuffer:
 
 \\{ack-minibuffer-local-map}"
   (interactive
-   (let ((project-root (funcall ack-default-directory-function
-                                current-prefix-arg))
+   (let ((project-root (or (funcall ack-default-directory-function
+                                    current-prefix-arg)
+                           default-directory))
          ;; Disable completion cycling; see http://debbugs.gnu.org/12221
          (completion-cycle-threshold nil))
      (list (minibuffer-with-setup-hook (if (>= emacs-major-version 24)
                                            'shell-completion-vars
                                          'pcomplete-shell-setup)
-             (read-from-minibuffer "Run ack (like this): "
-                                   ack-command ack-minibuffer-local-map
-                                   nil 'ack-history))
+             (read-from-minibuffer
+              (format "Run ack in `%s': "
+                      (file-name-nondirectory
+                       (directory-file-name project-root)))
+              ack-command ack-minibuffer-local-map nil 'ack-history))
            project-root)))
   (let ((default-directory (expand-file-name
                             (or directory default-directory))))
