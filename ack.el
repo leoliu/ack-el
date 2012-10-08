@@ -1,6 +1,6 @@
 ;;; ack.el --- Emacs interface to ack
 
-;; Copyright (C) 2012  Leo Liu
+;; Copyright (C) 2012  Free Software Foundation, Inc.
 
 ;; Author: Leo Liu <sdl.web@gmail.com>
 ;; Version: 0.8

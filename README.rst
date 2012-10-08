@@ -72,9 +72,9 @@ options while ``M-x ack`` or in shell/eshell.
 Usage
 -----
 
-- ``M-x ack`` and provide a pattern to search.
-- ``C-u M-x ack`` like ``M-x ack`` but allow you to select a
-  directory to search.
+- Type ``M-x ack`` and provide a pattern to search.
+- Type ``C-u M-x ack`` to search from current project root.
+- Type ``C-u C-u M-x ack`` to interactively choose a directory to search.
 
 While reading ack command and args from the minibuffer, the following
 key bindings may be useful:
