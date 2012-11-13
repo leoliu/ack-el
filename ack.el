@@ -57,6 +57,12 @@ environment variable and ~/.ackrc, which you can disable by the
   :type 'string
   :group 'ack)
 
+(defcustom ack-buffer-name-function nil
+  "If non-nil, a function to compute the name of an ack buffer.
+See `compilation-buffer-name-function' for details."
+  :type '(choice function (const nil))
+  :group 'ack)
+
 (defcustom ack-vc-grep-commands
   '((".git" . "git --no-pager grep --color -n -i")
     (".hg" . "hg grep -n -i")
@@ -364,7 +370,11 @@ minibuffer:
            project-root)))
   (let ((default-directory (expand-file-name
                             (or directory default-directory))))
-    (compilation-start command-args 'ack-mode)))
+    ;; Change to the compilation buffer so that `ack-buffer-name-function' can
+    ;; make use of `compilation-arguments'.
+    (with-current-buffer (compilation-start command-args 'ack-mode)
+      (when ack-buffer-name-function
+        (rename-buffer (funcall ack-buffer-name-function "ack"))))))
 
 (provide 'ack)
 ;;; ack.el ends here
