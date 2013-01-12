@@ -1,6 +1,6 @@
 ;;; ack.el --- Emacs interface to ack
 
-;; Copyright (C) 2012  Free Software Foundation, Inc.
+;; Copyright (C) 2012, 2013  Free Software Foundation, Inc.
 
 ;; Author: Leo Liu <sdl.web@gmail.com>
 ;; Version: 0.8
@@ -308,6 +308,16 @@ This gets tacked on the end of the generated expressions.")
     (delete-minibuffer-contents)
     (skeleton-insert '(nil cmd " '" _ "'"))))
 
+(defun ack-yank-symbol-at-point ()
+  "Yank the symbol from the window before entering the minibuffer."
+  (interactive)
+  (let ((symbol (and (minibuffer-selected-window)
+                     (with-current-buffer
+                         (window-buffer (minibuffer-selected-window))
+                       (thing-at-point 'symbol)))))
+    (if symbol (insert symbol)
+      (minibuffer-message "No symbol found"))))
+
 (defvar ack-minibuffer-local-map
   (let ((map (make-sparse-keymap)))
     (set-keymap-parent map minibuffer-local-map)
@@ -316,6 +326,7 @@ This gets tacked on the end of the generated expressions.")
                            'pcomplete))
     (define-key map "\M-I" 'ack-skel-file)
     (define-key map "\M-G" 'ack-skel-vc-grep)
+    (define-key map "\M-Y" 'ack-yank-symbol-at-point)
     (define-key map "'" 'skeleton-pair-insert-maybe)
     map)
   "Keymap used for reading `ack' command and args in minibuffer.")

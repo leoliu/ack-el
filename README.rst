@@ -81,6 +81,8 @@ key bindings may be useful:
 
 - ``M-I`` => insert a template for case-insensitive file name search
 - ``M-G`` => insert a template for ``git grep``, ``hg grep`` or ``bzr grep``
+- ``M-Y`` => grab the symbol at point from the window before entering
+  the minibuffer
 - ``TAB`` => completion for ack options
 
 Bugs
