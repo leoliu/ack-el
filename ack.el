@@ -209,12 +209,19 @@ This gets tacked on the end of the generated expressions.")
                   (match-string 1 file)
                 file))))))
 
+(defun ack-mode-display-match ()
+  "Display in another window the match in current line."
+  (interactive)
+  (setq compilation-current-error (point))
+  (next-error-no-select 0))
+
 (define-compilation-mode ack-mode "Ack"
   "A compilation mode tailored for ack."
   (set (make-local-variable 'compilation-disable-input) t)
   (set (make-local-variable 'compilation-error-face)
        'compilation-info)
-  (add-hook 'compilation-filter-hook 'ack-filter nil t))
+  (add-hook 'compilation-filter-hook 'ack-filter nil t)
+  (define-key ack-mode-map "\C-o" #'ack-mode-display-match))
 
 (defun ack-update-minibuffer-prompt (prompt)
   "Visually replace minibuffer prompt with PROMPT."
