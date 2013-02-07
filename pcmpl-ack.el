@@ -1,4 +1,4 @@
-;;; pcmpl-ack.el --- completion for ack tool
+;;; pcmpl-ack.el --- completion for ack tool    -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2012, 2013  Free Software Foundation, Inc.
 

@@ -21,7 +21,6 @@ Features
 - Handle colors using the standard library ``ansi-color.el``
 - Completion for ack options while reading from the minibuffer
 - Support ``git grep``, ``hg grep`` and ``bzr grep``
-- Support both emacs 23 and 24
 
 Screenshots
 -----------
@@ -84,6 +83,12 @@ key bindings may be useful:
 - ``M-Y`` => grab the symbol at point from the window before entering
   the minibuffer
 - ``TAB`` => completion for ack options
+
+Emacs23
+-------
+
+Check out the `emacs23
+<https://github.com/leoliu/ack-el/tree/emacs23>`_ branch.
 
 Bugs
 ----
