@@ -12,7 +12,7 @@ From http://betterthangrep.com/
 
 This package is part of `GNU ELPA <http://elpa.gnu.org>`_.
 
-Feature requests and bug reports are welcome. Thanks.
+Patches, feature requests and bug reports are welcome. Thanks.
 
 Features
 --------
