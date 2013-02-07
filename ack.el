@@ -179,8 +179,8 @@ This gets tacked on the end of the generated expressions.")
      nil nil (4 compilation-column-face nil t))
     ;; none grouping line (--nogroup or --noheading)
     ("^\\(.+?\\)\\(:\\|-\\)\\([1-9][0-9]*\\)\\2\\(?:\\(?4:[1-9][0-9]*\\)\\2\\)?"
-     (1 3 (ack--column-start . ack--column-end)
-        nil nil (4 compilation-column-face nil t)))
+     1 3 (ack--column-start . ack--column-end)
+     nil nil (4 compilation-column-face nil t))
     ("^Binary file \\(.+\\) matches$" 1 nil nil 0 1))
   "Ack version of `compilation-error-regexp-alist' (which see).")
 
