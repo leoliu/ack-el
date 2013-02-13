@@ -89,6 +89,11 @@ Used by `ack-guess-project-root'."
   :type '(repeat string)
   :group 'ack)
 
+(defcustom ack-minibuffer-setup-hook nil
+  "Ack-specific hook for `minibuffer-setup-hook'."
+  :type 'hook
+  :group 'ack)
+
 ;;; ======== END of USER OPTIONS ========
 
 (defvar ack-history nil "History list for ack.")
@@ -223,13 +228,6 @@ This gets tacked on the end of the generated expressions.")
   (add-hook 'compilation-filter-hook 'ack-filter nil t)
   (define-key ack-mode-map "\C-o" #'ack-mode-display-match))
 
-(defun ack-update-minibuffer-prompt (prompt)
-  "Visually replace minibuffer prompt with PROMPT."
-  (when (minibufferp)
-    (let ((inhibit-read-only t))
-      (put-text-property
-       (point-min) (minibuffer-prompt-end) 'display prompt))))
-
 (defun ack-skel-file ()
   "Insert a template for case-insensitive file name search."
   (interactive)
@@ -252,9 +250,6 @@ This gets tacked on the end of the generated expressions.")
          (cmd (or (cdr (assoc which ack-vc-grep-commands))
                   (error "No command provided for `%s grep'" backend))))
     (setq project-root root)
-    (ack-update-minibuffer-prompt
-     (format "Run %s grep in `%s': " backend
-             (file-name-nondirectory (directory-file-name project-root))))
     (delete-minibuffer-contents)
     (skeleton-insert `(nil ,cmd " '" _ "'"))))
 
@@ -302,6 +297,27 @@ Otherwise, interactively choose a directory."
         (ack-default-directory '(16))))
    (t (read-directory-name "In directory: " nil nil t))))
 
+(defun ack-update-minibuffer-prompt (&optional _beg _end _len)
+  (when (minibufferp)
+    (let ((inhibit-read-only t))
+      (save-excursion
+        (goto-char (minibuffer-prompt-end))
+        (when (looking-at "\\(\\w+\\)\\s-")
+          (put-text-property
+           (point-min) (minibuffer-prompt-end)
+           'display
+           (format "Run %s in `%s': "
+                   (match-string-no-properties 1)
+                   (file-name-nondirectory
+                    (directory-file-name project-root)))))))))
+
+(defun ack-minibuffer-setup-function ()
+  (shell-completion-vars)
+  (add-hook 'after-change-functions
+            #'ack-update-minibuffer-prompt nil t)
+  (ack-update-minibuffer-prompt)
+  (run-hooks 'ack-minibuffer-setup-hook))
+
 ;;;###autoload
 (defun ack (command-args &optional directory)
   "Run ack using COMMAND-ARGS and collect output in a buffer.
@@ -318,12 +334,11 @@ minibuffer:
                            default-directory))
          ;; Disable completion cycling; see http://debbugs.gnu.org/12221
          (completion-cycle-threshold nil))
-     (list (minibuffer-with-setup-hook 'shell-completion-vars
-             (read-from-minibuffer
-              (format "Run ack in `%s': "
-                      (file-name-nondirectory
-                       (directory-file-name project-root)))
-              ack-command ack-minibuffer-local-map nil 'ack-history))
+     (list (minibuffer-with-setup-hook 'ack-minibuffer-setup-function
+             (read-from-minibuffer "Ack: "
+                                   ack-command
+                                   ack-minibuffer-local-map
+                                   nil 'ack-history))
            project-root)))
   (let ((default-directory (expand-file-name
                             (or directory default-directory))))
