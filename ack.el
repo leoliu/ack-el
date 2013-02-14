@@ -33,6 +33,11 @@
 (when (>= emacs-major-version 24)
   (autoload 'shell-completion-vars "shell"))
 
+(eval-when-compile
+  (unless (fboundp 'setq-local)
+    (defmacro setq-local (var val)
+      (list 'set (list 'make-local-variable (list 'quote var)) val))))
+
 (defgroup ack nil
   "Run `ack' and display the results."
   :group 'tools
@@ -244,23 +249,21 @@ This gets tacked on the end of the generated expressions.")
           '(("^\\(.+?:[0-9]+:\\)\\(?:\\([0-9]+\\):\\)?" 1 2)))
     (when (< emacs-major-version 24)
       (setq font-lock-keywords (compilation-mode-font-lock-keywords)))
-    (make-local-variable 'compilation-parse-errors-filename-function)
-    (setq compilation-parse-errors-filename-function
-          (lambda (file)
-            (save-match-data
-              (if (string-match "\\(.+\\):\\([0-9]+\\):" file)
-                  (match-string 1 file)
-                file)))))
+    (setq-local compilation-parse-errors-filename-function
+                (lambda (file)
+                  (save-match-data
+                    (if (string-match "\\(.+\\):\\([0-9]+\\):" file)
+                        (match-string 1 file)
+                      file)))))
   ;; Handle `bzr grep' output
   (when (string-match-p "^[ \t]*bzr[ \t]" (car compilation-arguments))
-    (make-local-variable 'compilation-parse-errors-filename-function)
-    (setq compilation-parse-errors-filename-function
-          (lambda (file)
-            (save-match-data
-              ;; 'bzr grep -r' has files like `termcolor.py~147'
-              (if (string-match "\\(.+\\)~\\([0-9]+\\)" file)
-                  (match-string 1 file)
-                file))))))
+    (setq-local compilation-parse-errors-filename-function
+                (lambda (file)
+                  (save-match-data
+                    ;; 'bzr grep -r' has files like `termcolor.py~147'
+                    (if (string-match "\\(.+\\)~\\([0-9]+\\)" file)
+                        (match-string 1 file)
+                      file))))))
 
 (defun ack-mode-display-match ()
   "Display in another window the match in current line."
@@ -270,13 +273,11 @@ This gets tacked on the end of the generated expressions.")
 
 (define-compilation-mode ack-mode "Ack"
   "A compilation mode tailored for ack."
-  (set (make-local-variable 'compilation-disable-input) t)
-  (set (make-local-variable 'compilation-error-face)
-       'compilation-info)
+  (setq-local compilation-disable-input t)
+  (setq-local compilation-error-face 'compilation-info)
   (if (>= emacs-major-version 24)
       (add-hook 'compilation-filter-hook 'ack-filter nil t)
-    (set (make-local-variable 'ack--ansi-color-last-marker)
-         (point-min-marker))
+    (setq-local ack--ansi-color-last-marker (point-min-marker))
     (font-lock-add-keywords
      nil '(((lambda (limit)
               (let ((beg (marker-position ack--ansi-color-last-marker)))
