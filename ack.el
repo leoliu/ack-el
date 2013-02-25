@@ -237,7 +237,8 @@ This gets tacked on the end of the generated expressions.")
   (let ((ack (or (car (split-string ack-command nil t)) "ack")))
     (skeleton-insert `(nil ,ack " -g '(?i:" _ ")'"))))
 
-(defvar project-root)                   ; dynamically bound in `ack'
+;; Work around bug http://debbugs.gnu.org/13811
+(defvar ack--project-root nil)          ; dynamically bound in `ack'
 
 (defun ack-skel-vc-grep ()
   "Insert a template for vc grep search."
@@ -251,7 +252,7 @@ This gets tacked on the end of the generated expressions.")
          (backend (downcase (substring which 1)))
          (cmd (or (cdr (assoc which ack-vc-grep-commands))
                   (error "No command provided for `%s grep'" backend))))
-    (setq project-root root)
+    (setq ack--project-root root)
     (delete-minibuffer-contents)
     (skeleton-insert `(nil ,cmd " '" _ "'"))))
 
@@ -311,7 +312,7 @@ Otherwise, interactively choose a directory."
            (format "Run %s in `%s': "
                    (match-string-no-properties 1)
                    (file-name-nondirectory
-                    (directory-file-name project-root)))))))))
+                    (directory-file-name ack--project-root)))))))))
 
 (defun ack-minibuffer-setup-function ()
   (shell-completion-vars)
@@ -331,7 +332,7 @@ minibuffer:
 
 \\{ack-minibuffer-local-map}"
   (interactive
-   (let ((project-root (or (funcall ack-default-directory-function
+   (let ((ack--project-root (or (funcall ack-default-directory-function
                                     current-prefix-arg)
                            default-directory))
          ;; Disable completion cycling; see http://debbugs.gnu.org/12221
@@ -341,7 +342,7 @@ minibuffer:
                                    ack-command
                                    ack-minibuffer-local-map
                                    nil 'ack-history))
-           project-root)))
+           ack--project-root)))
   (let ((default-directory (expand-file-name
                             (or directory default-directory))))
     ;; Change to the compilation buffer so that `ack-buffer-name-function' can
