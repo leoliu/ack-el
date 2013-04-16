@@ -60,6 +60,9 @@ or::
 Completion (optional)
 ~~~~~~~~~~~~~~~~~~~~~
 
+UPDATE: ``pcmpl-ack.el`` is merged into emacs trunk and should appear
+in emacs 24.4.
+
 Place ``pcmpl-ack.el`` in the ``load-path`` and add::
 
   (autoload 'pcomplete/ack "pcmpl-ack")
