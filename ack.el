@@ -1,9 +1,9 @@
-;;; ack.el --- interface to ack            -*- lexical-binding: t; -*-
+;;; ack.el --- interface to ack-like tools   -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2012-2013  Free Software Foundation, Inc.
 
 ;; Author: Leo Liu <sdl.web@gmail.com>
-;; Version: 1.0
+;; Version: 1.01
 ;; Keywords: tools, processes, convenience
 ;; Created: 2012-03-24
 ;; URL: https://github.com/leoliu/ack-el
@@ -23,11 +23,14 @@
 
 ;;; Commentary:
 
-;; This package provides an interface to ack http://betterthangrep.com
-;; -- a tool like grep, designed for programmers with large trees of
+;; This package provides an interface to ack http://beyondgrep.com --
+;; a tool like grep, designed for programmers with large trees of
 ;; heterogeneous source code. It builds on standard packages
-;; `compile.el' and `ansi-color.el' and let you seamlessly run `ack'
+;; `compile.el' and `ansi-color.el' and lets you seamlessly run `ack'
 ;; with its large set of options.
+;;
+;; Ack-like tools such as the silver search (ag) and git/hg/bzr grep
+;; are well supported too.
 
 ;;; Usage:
 
@@ -75,13 +78,15 @@
   ;; Note: on GNU/Linux ack may be renamed to ack-grep
   (concat (file-name-nondirectory (or (executable-find "ack-grep")
                                       (executable-find "ack")
+                                      (executable-find "ag")
                                       "ack")) " ")
-  "The default ack command for \\[ack].
+  "The default command for \\[ack].
 
 Note also options to ack can be specified in ACK_OPTIONS
-environment variable and ~/.ackrc, which you can disable by the
+environment variable and .ackrc, which you can disable by the
 --noenv switch."
   :type 'string
+  :safe 'stringp
   :group 'ack)
 
 (defcustom ack-buffer-name-function nil
@@ -260,7 +265,9 @@ This gets tacked on the end of the generated expressions.")
   (interactive)
   (delete-minibuffer-contents)
   (let ((ack (or (car (split-string ack-command nil t)) "ack")))
-    (skeleton-insert `(nil ,ack " -g '(?i:" _ ")'"))))
+    (if (equal ack "ag")
+        (skeleton-insert `(nil ,ack " -ig '" _ "'"))
+      (skeleton-insert `(nil ,ack " -g '(?i:" _ ")'")))))
 
 ;; Work around bug http://debbugs.gnu.org/13811
 (defvar ack--project-root nil)          ; dynamically bound in `ack'

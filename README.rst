@@ -1,11 +1,12 @@
-=======================================================
- Emacs Interface to `Ack <http://betterthangrep.com>`_
-=======================================================
+==============================================================
+ Emacs Interface to `Ack <http://beyondgrep.com>`_-like Tools
+==============================================================
  
-This package brings the full power of `ack
-<http://betterthangrep.com>`_ to `emacs
-<http://www.gnu.org/software/emacs>`_ by allowing you to run it
-seamlessly with its large set of options.
+This package brings the full power of `ack <http://beyondgrep.com>`_
+to `emacs <http://www.gnu.org/software/emacs>`_ by allowing you to run
+it seamlessly with its large set of options. Ack-like tools such as
+`the silver searcher <https://github.com/ggreer/the_silver_searcher>`_
+and ``git/hg/bzr grep`` are well supported too.
 
 It is part of `GNU ELPA <http://elpa.gnu.org>`_ - the official package
 archive for `emacs <http://www.gnu.org/software/emacs>`_. Patches,
@@ -14,9 +15,11 @@ feature requests and bug reports are welcome.
 Features
 --------
 
-- Keep all features of `ack <http://betterthangrep.com>`_ and more
+- Keep all features of `ack <http://beyondgrep.com>`_ and more
 - Handle colors using the standard library ``ansi-color.el``
 - Completion for ack options while reading from the minibuffer
+- Support `the silver search (ag)
+  <https://github.com/ggreer/the_silver_searcher>`_
 - Support ``git grep``, ``hg grep`` and ``bzr grep``
 
 Install
