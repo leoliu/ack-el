@@ -1,6 +1,6 @@
-;;; pcmpl-ack.el --- completion for ack tool    -*- lexical-binding: t; -*-
+;;; pcmpl-ack.el --- completion for ack    -*- lexical-binding: t; -*-
 
-;; Copyright (C) 2012, 2013  Free Software Foundation, Inc.
+;; Copyright (C) 2012-2013  Free Software Foundation, Inc.
 
 ;; Author: Leo Liu <sdl.web@gmail.com>
 ;; Keywords: tools, processes, convenience

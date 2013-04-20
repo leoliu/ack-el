@@ -1,9 +1,9 @@
-;;; ack.el --- Emacs interface to ack           -*- lexical-binding: t; -*-
+;;; ack.el --- interface to ack            -*- lexical-binding: t; -*-
 
-;; Copyright (C) 2012, 2013  Free Software Foundation, Inc.
+;; Copyright (C) 2012-2013  Free Software Foundation, Inc.
 
 ;; Author: Leo Liu <sdl.web@gmail.com>
-;; Version: 0.9
+;; Version: 1.0
 ;; Keywords: tools, processes, convenience
 ;; Created: 2012-03-24
 ;; URL: https://github.com/leoliu/ack-el
@@ -23,8 +23,31 @@
 
 ;;; Commentary:
 
-;; ack is a tool like grep, designed for programmers with large trees
-;; of heterogeneous source code - http://betterthangrep.com/.
+;; This package provides an interface to ack http://betterthangrep.com
+;; -- a tool like grep, designed for programmers with large trees of
+;; heterogeneous source code. It builds on standard packages
+;; `compile.el' and `ansi-color.el' and let you seamlessly run `ack'
+;; with its large set of options.
+
+;;; Usage:
+
+;; +  Type `M-x ack' and provide a pattern to search.
+;; +  Type `C-u M-x ack' to search from current project root.
+;; +  Type `C-u C-u M-x ack' to interactively choose a directory to
+;;    search.
+;;
+;; Note: use `ack-default-directory-function' for customised
+;; behaviour.
+;;
+;; When in the minibuffer the following key bindings may be useful:
+;;
+;; +  `M-I' inserts a template for case-insensitive file name search
+;; +  `M-G' inserts a template for `git grep', `hg grep' or `bzr grep'
+;; +  `M-Y' inserts the symbol at point from the window before entering
+;;    the minibuffer
+;; +  `TAB' completes ack options
+
+;;; Bugs: https://github.com/leoliu/ack-el/issues
 
 ;;; Code:
 

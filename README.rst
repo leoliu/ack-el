@@ -1,75 +1,43 @@
-==========================================
- Emacs Interface to command-line tool ack
-==========================================
+=======================================================
+ Emacs Interface to `Ack <http://betterthangrep.com>`_
+=======================================================
+ 
+This package brings the full power of `ack
+<http://betterthangrep.com>`_ to `emacs
+<http://www.gnu.org/software/emacs>`_ by allowing you to run it
+seamlessly with its large set of options.
 
-From http://betterthangrep.com/
-
-    ack is a tool like grep, designed for programmers with large trees
-    of heterogeneous source code.
-
-    ack is written purely in Perl, and takes advantage of the power of
-    Perl's regular expressions.
-
-This package is part of `GNU ELPA <http://elpa.gnu.org>`_.
-
-Patches, feature requests and bug reports are welcome. Thanks.
+It is part of `GNU ELPA <http://elpa.gnu.org>`_ - the official package
+archive for `emacs <http://www.gnu.org/software/emacs>`_. Patches,
+feature requests and bug reports are welcome.
 
 Features
 --------
 
-- Neither ``--nogroup`` nor ``--noheading`` is required
+- Keep all features of `ack <http://betterthangrep.com>`_ and more
 - Handle colors using the standard library ``ansi-color.el``
 - Completion for ack options while reading from the minibuffer
 - Support ``git grep``, ``hg grep`` and ``bzr grep``
 
-Screenshots
------------
-
-.. figure:: http://i.imgur.com/mrk8k.png
-   :width: 400 px
-   :target: http://i.imgur.com/mrk8k.png
-   :alt: ack-git-grep.png
-
-   ``git --no-pager grep -n --color 'hg grep'``
-
-.. figure:: http://i.imgur.com/a72Ap.png
-   :width: 400 px
-   :target: http://i.imgur.com/a72Ap.png
-   :alt: ack-emacs23-1.png
-
-   ``ack --column 'ack is.*tool'``
-
-.. figure:: http://i.imgur.com/U2vFz.png
-   :width: 400 px
-   :target: http://i.imgur.com/U2vFz.png
-   :alt: ack-emacs23-2.png
-
-   ``ack --column --nogroup --nocolor 'ack is.*tool'``
-
 Install
 -------
 
-Place ``ack.el`` in the ``load-path`` and add to your init file::
+``M-x package-install RET ack RET``
 
-  (require 'ack)
+Screenshots
+-----------
 
-or::
+* ack
 
- (autoload 'ack "ack" nil t)
+.. figure:: http://i.imgur.com/VwWyzAe.png
+   :target: http://i.imgur.com/VwWyzAe.png
+   :alt: ack.png
 
-Completion (optional)
-~~~~~~~~~~~~~~~~~~~~~
+* git grep
 
-UPDATE: ``pcmpl-ack.el`` is merged into emacs trunk and should appear
-in emacs 24.4.
-
-Place ``pcmpl-ack.el`` in the ``load-path`` and add::
-
-  (autoload 'pcomplete/ack "pcmpl-ack")
-  (autoload 'pcomplete/ack-grep "pcmpl-ack")
-
-to your init file. After this you will be able complete ``ack``
-options while ``M-x ack`` or in shell/eshell.
+.. figure:: http://i.imgur.com/rwjC4pa.png
+   :target: http://i.imgur.com/rwjC4pa.png
+   :alt: ack-git-grep.png
 
 Usage
 -----
