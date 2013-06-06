@@ -3,7 +3,7 @@
 ;; Copyright (C) 2012-2013  Free Software Foundation, Inc.
 
 ;; Author: Leo Liu <sdl.web@gmail.com>
-;; Version: 1.01
+;; Version: 1.3
 ;; Keywords: tools, processes, convenience
 ;; Created: 2012-03-24
 ;; URL: https://github.com/leoliu/ack-el
@@ -156,11 +156,7 @@ This function is called from `compilation-filter-hook'."
     ;; Command output lines.
     (": \\(.+\\): \\(?:Permission denied\\|No such \\(?:file or directory\\|device or address\\)\\)$"
      1 'compilation-error)
-    ;; Remove match from ack-error-regexp-alist before fontifying
-    ("^Ack \\(?:started\\|finished\\) at.*"
-     (0 '(face nil compilation-message nil message nil help-echo nil mouse-face nil) t))
     ("^Ack \\(exited abnormally\\|interrupt\\|killed\\|terminated\\)\\(?:.*with code \\([0-9]+\\)\\)?.*"
-     (0 '(face nil compilation-message nil message nil help-echo nil mouse-face nil) t)
      (1 'compilation-error)
      (2 'compilation-error nil t)))
   "Additional things to highlight in ack output.
@@ -211,12 +207,13 @@ This gets tacked on the end of the generated expressions.")
 ;;; in the regexp alist has already been applied in a region.
 
 (defconst ack-error-regexp-alist
-  `(;; grouping line (--group or --heading)
+  `(;; Grouping line (--group or --heading).
     ("^\\([1-9][0-9]*\\)\\(:\\|-\\)\\(?:\\(?4:[1-9][0-9]*\\)\\2\\)?"
      ack--file 1 (ack--column-start . ack--column-end)
      nil nil (4 compilation-column-face nil t))
-    ;; none grouping line (--nogroup or --noheading)
-    ("^\\(.+?\\)\\(:\\|-\\)\\([1-9][0-9]*\\)\\2\\(?:\\(?4:[1-9][0-9]*\\)\\2\\)?"
+    ;; None grouping line (--nogroup or --noheading). Avoid matching
+    ;; 'Ack started at Thu Jun 6 12:27:53'.
+    ("^\\(.+?\\)\\(:\\|-\\)\\([1-9][0-9]*\\)\\2\\(?:\\(?:\\(?4:[1-9][0-9]*\\)\\2\\)\\|[^0-9\n]\\|[0-9][^0-9\n]\\|...\\)"
      1 3 (ack--column-start . ack--column-end)
      nil nil (4 compilation-column-face nil t))
     ("^Binary file \\(.+\\) matches$" 1 nil nil 0 1))
