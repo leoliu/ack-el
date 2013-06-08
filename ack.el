@@ -215,7 +215,7 @@ This gets tacked on the end of the generated expressions.")
     ;; 'Ack started at Thu Jun 6 12:27:53'.
     ("^\\(.+?\\)\\(:\\|-\\)\\([1-9][0-9]*\\)\\2\\(?:\\(?:\\(?4:[1-9][0-9]*\\)\\2\\)\\|[^0-9\n]\\|[0-9][^0-9\n]\\|...\\)"
      1 3 (ack--column-start . ack--column-end)
-     nil nil (4 compilation-column-face nil t))
+     nil 1 (4 compilation-column-face nil t))
     ("^Binary file \\(.+\\) matches$" 1 nil nil 0 1))
   "Ack version of `compilation-error-regexp-alist' (which see).")
 
