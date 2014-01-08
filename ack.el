@@ -1,9 +1,9 @@
-;;; ack.el --- interface to ack-like tools   -*- lexical-binding: t; -*-
+;;; ack.el --- interface to ack-like tools           -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2012-2013  Free Software Foundation, Inc.
 
 ;; Author: Leo Liu <sdl.web@gmail.com>
-;; Version: 1.3
+;; Version: 1.4
 ;; Keywords: tools, processes, convenience
 ;; Created: 2012-03-24
 ;; URL: https://github.com/leoliu/ack-el
@@ -49,6 +49,13 @@
 ;; +  `M-Y' inserts the symbol at point from the window before entering
 ;;    the minibuffer
 ;; +  `TAB' completes ack options
+
+;;; Supported tools:
+
+;; + ack
+;; + grep
+;; + the_silver_search
+;; + git/hg/bzr grep
 
 ;;; Bugs: https://github.com/leoliu/ack-el/issues
 
@@ -378,7 +385,8 @@ minibuffer:
     ;; make use of `compilation-arguments'.
     (with-current-buffer (compilation-start command-args 'ack-mode)
       (when ack-buffer-name-function
-        (rename-buffer (funcall ack-buffer-name-function "ack"))))))
+        (rename-buffer (funcall ack-buffer-name-function "ack")))
+      (current-buffer))))
 
 (provide 'ack)
 ;;; ack.el ends here
