@@ -384,6 +384,21 @@ Otherwise, interactively choose a directory."
   (ack-update-minibuffer-prompt)
   (run-hooks 'ack-minibuffer-setup-hook))
 
+;; See http://www.gnu.org/software/emacs/manual/html_node/elisp/Filter-Functions.html
+(defun ack-process-output-filter (proc output)
+  (when (buffer-live-p (process-buffer proc))
+    (with-current-buffer (process-buffer proc)
+      (toggle-read-only)
+      (let ((moving (= (point) (process-mark proc))))
+        (save-excursion
+          (goto-char (process-mark proc))
+          ;; remove delete-to-end-of-line escape codes
+          (insert (replace-regexp-in-string "\x1B\\[K" "" output))
+          (set-marker (process-mark proc) (point)))
+        (if moving (goto-char (process-mark proc))))
+      (toggle-read-only))))
+
+
 ;;;###autoload
 (defun ack (command-args &optional directory)
   "Run ack using COMMAND-ARGS and collect output in a buffer.
@@ -411,6 +426,7 @@ minibuffer:
     ;; Change to the compilation buffer so that `ack-buffer-name-function' can
     ;; make use of `compilation-arguments'.
     (with-current-buffer (compilation-start command-args 'ack-mode)
+      (set-process-filter (get-buffer-process (current-buffer)) 'ack-process-output-filter)
       (when ack-buffer-name-function
         (rename-buffer (funcall ack-buffer-name-function "ack"))))))
 
