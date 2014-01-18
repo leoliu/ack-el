@@ -282,7 +282,11 @@ This gets tacked on the end of the generated expressions.")
      nil '(((lambda (limit)
               (let ((beg (marker-position ack--ansi-color-last-marker)))
                 (move-marker ack--ansi-color-last-marker limit)
-                (ansi-color-apply-on-region beg ack--ansi-color-last-marker))
+                (ansi-color-apply-on-region beg ack--ansi-color-last-marker)
+                ;; Issue https://github.com/leoliu/ack-el/pull/3
+                (goto-char beg)
+                (while (re-search-forward "\x1b\\[K" ack--ansi-color-last-marker t)
+                  (replace-match "")))
               nil)))))
   (define-key ack-mode-map "\C-o" #'ack-mode-display-match))
 
