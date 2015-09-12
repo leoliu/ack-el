@@ -134,6 +134,12 @@ Used by `ack-guess-project-root'."
   :type 'hook
   :group 'ack)
 
+(defcustom ack-after-command-hook nil
+  "Hook run after ack command is finished."
+  :type 'hook
+  :group 'ack)
+
+
 ;;; ======== END of USER OPTIONS ========
 
 (defvar ack-history nil "History list for ack.")
@@ -389,7 +395,8 @@ minibuffer:
     (with-current-buffer (compilation-start command-args 'ack-mode)
       (when ack-buffer-name-function
         (rename-buffer (funcall ack-buffer-name-function "ack")))
-      (current-buffer))))
+      (current-buffer)))
+  (run-hooks 'ack-after-command-hook))
 
 (provide 'ack)
 ;;; ack.el ends here
