@@ -1,9 +1,9 @@
 ;;; ack.el --- interface to ack-like tools           -*- lexical-binding: t; -*-
 
-;; Copyright (C) 2012-2013  Free Software Foundation, Inc.
+;; Copyright (C) 2012-2015  Free Software Foundation, Inc.
 
 ;; Author: Leo Liu <sdl.web@gmail.com>
-;; Version: 1.4
+;; Version: 1.5
 ;; Keywords: tools, processes, convenience
 ;; Created: 2012-03-24
 ;; URL: https://github.com/leoliu/ack-el
@@ -146,6 +146,9 @@ Used by `ack-guess-project-root'."
 
 (defvar ack-error "ack match"
   "Stem of message to print when no matches are found.")
+
+(defvar ack-finish-functions nil
+  "Value to use for `compilation-finish-functions' in ack buffers.")
 
 (defun ack-filter ()
   "Handle match highlighting escape sequences inserted by the ack process.
