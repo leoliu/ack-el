@@ -279,12 +279,17 @@ This gets tacked on the end of the generated expressions.")
 ;; Work around bug http://debbugs.gnu.org/13811
 (defvar ack--project-root nil)          ; dynamically bound in `ack'
 
+(defvar ack--yanked-symbol nil)  ; buffer-local in the minibuffer
+
 (defun ack-skel-vc-grep (&optional interactive)
   "Find a vc-controlled dir, insert a template for a vc grep search.
 If called interactively, INTERACTIVE is non-nil and calls to this
 function that cannot locate such a directory will produce an
 error, whereas in non-interactive calls they will silently exit,
 leaving the minibuffer unchanged.
+
+Additionally, interactive calls preceded by a previous
+`ack-yank-symbol-at-point' call, will recall the symbol inserted.
 
 This function is a suitable addition to
 `ack-minibuffer-setup-hook'."
@@ -317,7 +322,9 @@ This function is a suitable addition to
         (setq ack--project-root guessed-root)
         (ack-update-minibuffer-prompt))
       (delete-minibuffer-contents)
-      (skeleton-insert `(nil ,cmd " '" _ "'")))))
+      (skeleton-insert `(nil ,cmd " '" _ "'"))
+      (when (and interactive ack--yanked-symbol)
+        (insert ack--yanked-symbol)))))
 
 (defun ack-yank-symbol-at-point ()
   "Yank the symbol from the window before entering the minibuffer."
@@ -326,8 +333,9 @@ This function is a suitable addition to
                      (with-current-buffer
                          (window-buffer (minibuffer-selected-window))
                        (thing-at-point 'symbol)))))
-    (if symbol (insert symbol)
-      (minibuffer-message "No symbol found"))))
+    (cond (symbol (insert symbol)
+                  (set (make-local-variable 'ack--yanked-symbol) symbol))
+          (t (minibuffer-message "No symbol found")))))
 
 (defvar ack-minibuffer-local-map
   (let ((map (make-sparse-keymap)))
