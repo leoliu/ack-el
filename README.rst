@@ -64,9 +64,9 @@ makes ``M-x ack`` insert a ``git|hg|bzr grep`` template if searching
 from a project root. Then it will try to insert the symbol at point.
 
 .. code-block:: lisp
-   (add-hook 'ack-minibuffer-setup-hook 'ack-skel-vc-grep t)
-   (add-hook 'ack-minibuffer-setup-hook 'ack-yank-symbol-at-point t)
-                
+
+  (add-hook 'ack-minibuffer-setup-hook 'ack-skel-vc-grep t)
+  (add-hook 'ack-minibuffer-setup-hook 'ack-yank-symbol-at-point t)
 
 Emacs23
 -------
