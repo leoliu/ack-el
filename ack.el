@@ -1,8 +1,9 @@
 ;;; ack.el --- interface to ack-like tools           -*- lexical-binding: t; -*-
 
-;; Copyright (C) 2012-2015  Free Software Foundation, Inc.
+;; Copyright (C) 2012-2018  Free Software Foundation, Inc.
 
 ;; Author: Leo Liu <sdl.web@gmail.com>
+;; Maintainer: João Távora <joaotavora@gmail.com>
 ;; Version: 1.5
 ;; Keywords: tools, processes, convenience
 ;; Created: 2012-03-24
