@@ -58,6 +58,16 @@ key bindings may be useful:
   the minibuffer
 - ``TAB`` => completion for ack options
 
+If you use the above keybindings very often, stick the corresponding
+command names in ``ack-minibuffer-setup-hook``. The following snippet
+makes ``M-x ack`` insert a ``git|hg|bzr grep`` template if searching
+from a project root. Then it will try to insert the symbol at point.
+
+.. code-block:: lisp
+   (add-hook 'ack-minibuffer-setup-hook 'ack-skel-vc-grep t)
+   (add-hook 'ack-minibuffer-setup-hook 'ack-yank-symbol-at-point t)
+                
+
 Emacs23
 -------
 
@@ -71,4 +81,4 @@ https://github.com/leoliu/ack-el/issues
 
 Contributors
 ------------
-Phillip Lord
+Phillip Lord. The original author and previous mantainer is Leo Liu.
