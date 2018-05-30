@@ -279,21 +279,45 @@ This gets tacked on the end of the generated expressions.")
 ;; Work around bug http://debbugs.gnu.org/13811
 (defvar ack--project-root nil)          ; dynamically bound in `ack'
 
-(defun ack-skel-vc-grep ()
-  "Insert a template for vc grep search."
-  (interactive)
-  (let* ((regexp (concat "\\`" (regexp-opt
-                                (mapcar 'car ack-vc-grep-commands))
-                         "\\'"))
-         (root (or (ack-guess-project-root default-directory regexp)
-                   (error "Cannot locate vc project root")))
-         (which (car (directory-files root nil regexp)))
-         (backend (downcase (substring which 1)))
-         (cmd (or (cdr (assoc which ack-vc-grep-commands))
-                  (error "No command provided for `%s grep'" backend))))
-    (setq ack--project-root root)
-    (delete-minibuffer-contents)
-    (skeleton-insert `(nil ,cmd " '" _ "'"))))
+(defun ack-skel-vc-grep (&optional interactive)
+  "Find a vc-controlled dir, insert a template for a vc grep search.
+If called interactively, INTERACTIVE is non-nil and calls to this
+function that cannot locate such a directory will produce an
+error, whereas in non-interactive calls they will silently exit,
+leaving the minibuffer unchanged.
+
+This function is a suitable addition to
+`ack-minibuffer-setup-hook'."
+  (interactive "p")
+  (catch 'giveup
+    (let* ((regexp (concat "\\`" (regexp-opt
+                                  (mapcar 'car ack-vc-grep-commands))
+                           "\\'"))
+           (guessed-root (or (ack-guess-project-root ack--project-root regexp)
+                             (if interactive
+                                 (user-error
+                                  "Cannot locate a vc project root from %s"
+                                  ack--project-root)
+                               (throw 'giveup nil))))
+           (which (progn
+                    (unless (or interactive
+                                (equal
+                                 (file-truename ack--project-root)
+                                 (file-truename guessed-root)))
+                      ;; See github
+                      ;; https://github.com/leoliu/ack-el/issues/10
+                      ;; for the reason for giving up here
+                      ;; non-interactively.
+                      (throw 'giveup nil))
+                    (car (directory-files guessed-root nil regexp))))
+           (backend (downcase (substring which 1)))
+           (cmd (or (cdr (assoc which ack-vc-grep-commands))
+                    (error "No command provided for `%s grep'" backend))))
+      (when interactive
+        (setq ack--project-root guessed-root)
+        (ack-update-minibuffer-prompt))
+      (delete-minibuffer-contents)
+      (skeleton-insert `(nil ,cmd " '" _ "'")))))
 
 (defun ack-yank-symbol-at-point ()
   "Yank the symbol from the window before entering the minibuffer."
