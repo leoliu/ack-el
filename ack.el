@@ -405,8 +405,8 @@ minibuffer:
 \\{ack-minibuffer-local-map}"
   (interactive
    (let ((ack--project-root (or (funcall ack-default-directory-function
-                                    current-prefix-arg)
-                           default-directory))
+                                         current-prefix-arg)
+                                default-directory))
          ;; Disable completion cycling; see http://debbugs.gnu.org/12221
          (completion-cycle-threshold nil))
      (list (minibuffer-with-setup-hook 'ack-minibuffer-setup-function
@@ -415,13 +415,19 @@ minibuffer:
                                    ack-minibuffer-local-map
                                    nil 'ack-history))
            ack--project-root)))
-  (let ((default-directory (expand-file-name
-                            (or directory default-directory))))
-    ;; Change to the compilation buffer so that `ack-buffer-name-function' can
-    ;; make use of `compilation-arguments'.
-    (with-current-buffer (compilation-start command-args 'ack-mode)
+  (let* ((lexical-default-directory
+          (expand-file-name
+           (or directory default-directory))))
+    ;; Change to the compilation to ensure a correct
+    ;; `default-directory' there and to ensure
+    ;; `ack-buffer-name-function' can make use of
+    ;; `compilation-arguments'.
+    (with-current-buffer
+        (let ((default-directory lexical-default-directory))
+          (compilation-start command-args 'ack-mode))
       (when ack-buffer-name-function
         (rename-buffer (funcall ack-buffer-name-function "ack")))
+      (setq default-directory lexical-default-directory)
       (current-buffer))))
 
 (provide 'ack)
