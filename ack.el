@@ -4,7 +4,7 @@
 
 ;; Author: Leo Liu <sdl.web@gmail.com>
 ;; Maintainer: João Távora <joaotavora@gmail.com>
-;; Version: 1.5
+;; Version: 1.6
 ;; Keywords: tools, processes, convenience
 ;; Created: 2012-03-24
 ;; URL: https://github.com/leoliu/ack-el
