@@ -4,7 +4,7 @@
 
 ;; Author: Leo Liu <sdl.web@gmail.com>
 ;; Maintainer: João Távora <joaotavora@gmail.com>
-;; Version: 1.6
+;; Version: 1.7
 ;; Keywords: tools, processes, convenience
 ;; Created: 2012-03-24
 ;; URL: https://github.com/leoliu/ack-el
@@ -24,26 +24,45 @@
 
 ;;; Commentary:
 
-;; This package provides an interface to ack http://beyondgrep.com --
-;; a tool like grep, designed for programmers with large trees of
-;; heterogeneous source code. It builds on standard packages
-;; `compile.el' and `ansi-color.el' and lets you seamlessly run `ack'
-;; with its large set of options.
+;; This package was originally written to provide an interface to ack
+;; http://beyondgrep.com -- a tool like grep, designed for programmers
+;; with large trees of heterogeneous source code. It builds on
+;; standard packages `compile.el' and `ansi-color.el' and lets you
+;; seamlessly run `ack' with its large set of options.
 ;;
-;; Ack-like tools such as the silver search (ag) and git/hg/bzr grep
-;; are well supported too.
-
-;;; Usage:
-
+;; Later it was enhanced to also support ack-like tools such as the
+;; silver search (ag) and git/hg/bzr grep facilities.  So, while the
+;; name persists, actually using `ack' program is merely a suggestion.
+;;
+;; The basic usage pattern starts with `M-x ack', which will compose a
+;; suitable command-line in the minibuffer.  A good variable to
+;; customize early on is `ack-defaults-function', which controls how
+;; this command can be modulated by one of more `C-u''s to control
+;; this process.
+;;
+;; If `ack-defaults-function' is `ack-quickgrep-defaults', which is
+;; the default starting from version 1.7:
+;;
+;; +  Type `M-x ack' to start searching immediately for the thing
+;;    at point from the current project root.
+;; +  Type `C-u M-x ack' to do the same but get a chance to edit the line.
+;; +  Type `C-u C-u M-x ack' to interactively choose a directory to
+;;    search from.
+;;
+;; If `ack-defaults-function' is `ack-legacy-defaults' this brings
+;; back the default behaviour before version 1.7
+;;
 ;; +  Type `M-x ack' and provide a pattern to search.
 ;; +  Type `C-u M-x ack' to search from current project root.
 ;; +  Type `C-u C-u M-x ack' to interactively choose a directory to
 ;;    search.
 ;;
-;; Note: use `ack-default-directory-function' for customised
-;; behaviour.
+;; Read the docstrings of `ack-quickgrep-defaults' and
+;; `ack-legacy-defaults' for finer details.
 ;;
-;; When in the minibuffer the following key bindings may be useful:
+;; Regardless of what function you put in `ack-defaults-function',
+;; when editing the minibuffer the following key bindings may be
+;; useful:
 ;;
 ;; +  `M-I' inserts a template for case-insensitive file name search
 ;; +  `M-G' inserts a template for `git grep', `hg grep' or `bzr grep'
@@ -63,6 +82,7 @@
 ;;; Code:
 
 (require 'compile)
+(require 'pcase)
 (require 'ansi-color)
 (autoload 'shell-completion-vars "shell")
 
@@ -113,10 +133,32 @@ Each element is of the form (VC_DIR . CMD)."
   :type '(repeat (cons string string))
   :group 'ack)
 
-(defcustom ack-default-directory-function 'ack-default-directory
-  "A function to return the default directory for `ack'.
-It is called with one arg, the prefix arg to `ack'."
-  :type 'function
+(define-obsolete-variable-alias
+  'ack-default-directory-function
+  'ack-defaults-function
+  "1.7")
+
+(define-obsolete-function-alias 'ack-default-directory
+  'ack-legacy-defaults "1.7")
+
+(defcustom ack-defaults-function 'ack-quickgrep-defaults
+  "A function to return a default parametrization for `ack'.
+It is called with one arg, the prefix arg to `ack'.  It may
+return a single element, a string, which is the directory under
+which the `ack' command will be run.  It may also return a list
+of (DIR AUTO-CONFIRM . SETUP-FUNCTIONS) which where DIR is a
+directory like previously described, AUTO-CONFIRM says to
+automatically confirm the minibuffer and SETUP-FUNCTIONS are
+added at the end of `ack-minibuffer-setup-hook'.
+
+Two functions are provided for the user to plug here:
+`ack-legacy-defaults' and `ack-quickgrep-defaults' (see their
+docstrings)."
+  :type '(choice (const :tag "Use \"quickgrep\" defaults"
+                        ack-quickgrep-defaults)
+                 (const :tag "Use \"legacy\" defaults"
+                        ack-legacy-defaults)
+                 (function :tag "Use some other function"))
   :group 'ack)
 
 (defcustom ack-project-root-patterns
@@ -359,18 +401,48 @@ This function is a suitable addition to
       (unless (equal parent start-directory)
         (ack-guess-project-root parent regexp)))))
 
-(defun ack-default-directory (arg)
-  "A function for `ack-default-directory-function'.
-With no \\[universal-argument], return `default-directory';
-With one \\[universal-argument], find the project root according to
-`ack-project-root-patterns';
-Otherwise, interactively choose a directory."
+(defun ack-legacy-defaults (arg)
+  "A function for `ack-defaults-function'.
+With null ARG (no \\[universal-argument]), return
+`default-directory'; With one \\[universal-argument], find the
+project root according to `ack-project-root-patterns'; Otherwise,
+interactively choose a directory."
   (cond
    ((not arg) default-directory)
    ((= (prefix-numeric-value arg) 4)
     (or (ack-guess-project-root default-directory)
-        (ack-default-directory '(16))))
+        (ack-legacy-defaults '(16))))
    (t (read-directory-name "In directory: " nil nil t))))
+
+(defun ack-quickgrep-defaults (arg)
+  "A function for `ack-defaults-function'.
+With null ARG (no \\[universal-argument]) returns a list (DIR
+AUTO-CONFIRM SETUP) where DIR is guessed according to
+`ack-guess-project-root', AUTO-CONFIRM is t and SETUP contains
+`ack-skel-vc-grep' and `ack-yank-symbol-at-point'.  This makes
+`ack' attempt to a \"git grep\" search immediately for the symbol
+at point.  The \"git grep\" command line will only be suggested
+if it makes sense in the context (otherwise, a fallback to
+`ack-command', like \"ack\" or \"ag\", is used).  Likewise, the
+search only starts immediately if there is indeed something \"at
+point\".
+
+With one \\[universal-argument], behaves like before except that
+AUTO-CONFIRM is nil.  This composes an identical `ack' command
+but allows the user to edit it before searching, just like what
+would have happened if there was no symbol at point.
+
+With more \\[universal-argument]'s, behaves like before except
+that DIR is first requested from the user and \"git grep\" is not
+automatically attempted."
+  (let ((numeric (prefix-numeric-value arg)))
+    (append (list (if (> numeric 4)
+                      (read-directory-name "In directory: " nil nil t)
+                    (ack-guess-project-root default-directory))
+                  (= numeric 1))
+            (if (> numeric 4)
+                (list 'ack-yank-symbol-at-point)
+              (list 'ack-skel-vc-grep 'ack-yank-symbol-at-point)))))
 
 (defun ack-update-minibuffer-prompt (&optional _beg _end _len)
   (when (minibufferp)
@@ -383,8 +455,11 @@ Otherwise, interactively choose a directory."
            'display
            (format "Run %s in `%s': "
                    (match-string-no-properties 1)
-                   (file-name-nondirectory
-                    (directory-file-name ack--project-root)))))))))
+                   (if (string-prefix-p default-directory
+                                        (expand-file-name ack--project-root))
+                       (file-name-nondirectory
+                        (directory-file-name ack--project-root))
+                     ack--project-root))))))))
 
 (defun ack-minibuffer-setup-function ()
   (shell-completion-vars)
@@ -392,6 +467,11 @@ Otherwise, interactively choose a directory."
             #'ack-update-minibuffer-prompt nil t)
   (ack-update-minibuffer-prompt)
   (run-hooks 'ack-minibuffer-setup-hook))
+
+(defun ack--auto-confirm ()
+  (throw 'ack--auto-confirm
+         (buffer-substring-no-properties
+          (minibuffer-prompt-end) (point-max))))
 
 ;;;###autoload
 (defun ack (command-args &optional directory)
@@ -404,16 +484,28 @@ minibuffer:
 
 \\{ack-minibuffer-local-map}"
   (interactive
-   (let ((ack--project-root (or (funcall ack-default-directory-function
-                                         current-prefix-arg)
-                                default-directory))
-         ;; Disable completion cycling; see http://debbugs.gnu.org/12221
-         (completion-cycle-threshold nil))
+   (pcase-let* ((defaults (funcall ack-defaults-function current-prefix-arg))
+                (defaults (if (listp defaults) defaults (list defaults nil)))
+                (`(,ack--project-root ,auto-confirm . ,setup) defaults)
+                (ack--project-root (or ack--project-root default-directory))
+                (ack-minibuffer-setup-hook (if setup
+                                               (append ack-minibuffer-setup-hook
+                                                       setup)
+                                               ack-minibuffer-setup-hook))
+                (ack-minibuffer-setup-hook (if auto-confirm
+                                               (delete-dups
+                                                (append ack-minibuffer-setup-hook
+                                                        '(ack-yank-symbol-at-point
+                                                          ack--auto-confirm)))
+                                             ack-minibuffer-setup-hook))
+                ;; Disable completion cycling; see http://debbugs.gnu.org/12221
+                (completion-cycle-threshold nil))
      (list (minibuffer-with-setup-hook 'ack-minibuffer-setup-function
-             (read-from-minibuffer "Ack: "
-                                   ack-command
-                                   ack-minibuffer-local-map
-                                   nil 'ack-history))
+             (catch 'ack--auto-confirm
+               (read-from-minibuffer "Ack: "
+                                     ack-command
+                                     ack-minibuffer-local-map
+                                     nil 'ack-history)))
            ack--project-root)))
   (let* ((lexical-default-directory
           (expand-file-name
