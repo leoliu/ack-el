@@ -40,8 +40,7 @@
 ;; this command can be modulated by one of more `C-u''s to control
 ;; this process.
 ;;
-;; If `ack-defaults-function' is `ack-quickgrep-defaults', which is
-;; the default starting from version 1.7:
+;; If `ack-defaults-function' is `ack-quickgrep-defaults':
 ;;
 ;; +  Type `M-x ack' to start searching immediately for the thing
 ;;    at point from the current project root.
@@ -49,8 +48,7 @@
 ;; +  Type `C-u C-u M-x ack' to interactively choose a directory to
 ;;    search from.
 ;;
-;; If `ack-defaults-function' is `ack-legacy-defaults' this brings
-;; back the default behaviour before version 1.7
+;; If `ack-defaults-function' is `ack-legacy-defaults':
 ;;
 ;; +  Type `M-x ack' and provide a pattern to search.
 ;; +  Type `C-u M-x ack' to search from current project root.
@@ -141,7 +139,7 @@ Each element is of the form (VC_DIR . CMD)."
 (define-obsolete-function-alias 'ack-default-directory
   'ack-legacy-defaults "1.7")
 
-(defcustom ack-defaults-function 'ack-quickgrep-defaults
+(defcustom ack-defaults-function 'ack-legacy-defaults
   "A function to return a default parametrization for `ack'.
 It is called with one arg, the prefix arg to `ack'.  It may
 return a single element, a string, which is the directory under
