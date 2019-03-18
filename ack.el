@@ -82,6 +82,7 @@
 (require 'compile)
 (require 'pcase)
 (require 'ansi-color)
+(require 'thingatpt)
 (autoload 'shell-completion-vars "shell")
 
 (eval-when-compile
@@ -437,7 +438,7 @@ automatically attempted."
     (append (list (if (> numeric 4)
                       (read-directory-name "In directory: " nil nil t)
                     (ack-guess-project-root default-directory))
-                  (= numeric 1))
+                  (and (thing-at-point 'symbol) (= numeric 1)))
             (if (> numeric 4)
                 (list 'ack-yank-symbol-at-point)
               (list 'ack-skel-vc-grep 'ack-yank-symbol-at-point)))))
