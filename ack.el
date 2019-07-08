@@ -4,7 +4,7 @@
 
 ;; Author: Leo Liu <sdl.web@gmail.com>
 ;; Maintainer: João Távora <joaotavora@gmail.com>
-;; Version: 1.8
+;; Version: 1.9
 ;; Keywords: tools, processes, convenience
 ;; Created: 2012-03-24
 ;; URL: https://github.com/leoliu/ack-el
@@ -468,9 +468,10 @@ automatically attempted."
   (run-hooks 'ack-minibuffer-setup-hook))
 
 (defun ack--auto-confirm ()
-  (throw 'ack--auto-confirm
-         (buffer-substring-no-properties
-          (minibuffer-prompt-end) (point-max))))
+  (when ack--yanked-symbol
+    (throw 'ack--auto-confirm
+           (buffer-substring-no-properties
+            (minibuffer-prompt-end) (point-max)))))
 
 ;;;###autoload
 (defun ack (command-args &optional directory)
