@@ -103,10 +103,14 @@
 
 (defcustom ack-command
   ;; Note: on GNU/Linux ack may be renamed to ack-grep
-  (concat (file-name-nondirectory (or (executable-find "ack-grep")
-                                      (executable-find "ack")
-                                      (executable-find "ag")
-                                      "ack")) " ")
+  (concat (file-name-nondirectory (or
+                                   (executable-find "ack-grep")
+                                   (executable-find "ack")
+                                   (executable-find "ag")
+                                   (concat
+                                    (executable-find "rg")
+                                    " -n -H -S --no-heading --color always -e")
+                                   "ack")) " ")
   "The default command for \\[ack].
 
 Note also options to ack can be specified in ACK_OPTIONS
@@ -314,9 +318,12 @@ This gets tacked on the end of the generated expressions.")
   (interactive)
   (delete-minibuffer-contents)
   (let ((ack (or (car (split-string ack-command nil t)) "ack")))
-    (if (equal ack "ag")
-        (skeleton-insert `(nil ,ack " -ig '" _ "'"))
-      (skeleton-insert `(nil ,ack " -g '(?i:" _ ")'")))))
+    (cond ((equal ack "ag")
+           (skeleton-insert `(nil ,ack " -ig '" _ "'")))
+          ((equal ack "rg")
+           (skeleton-insert
+            `(nil ,ack " --color always --files --iglob '*" _ "*'")))
+      (t (skeleton-insert `(nil ,ack " -g '(?i:" _ ")'"))))))
 
 ;; Work around bug http://debbugs.gnu.org/13811
 (defvar ack--project-root nil)          ; dynamically bound in `ack'
