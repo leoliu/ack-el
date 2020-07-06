@@ -503,7 +503,8 @@ minibuffer:
      (list (minibuffer-with-setup-hook 'ack-minibuffer-setup-function
              (catch 'ack--auto-confirm
                (read-from-minibuffer "Ack: "
-                                     ack-command
+				     `(,(concat ack-command "''")
+				       . ,(+ (length ack-command) 2))
                                      ack-minibuffer-local-map
                                      nil 'ack-history)))
            ack--project-root)))
