@@ -4,7 +4,7 @@
 
 ;; Author: Leo Liu <sdl.web@gmail.com>
 ;; Maintainer: João Távora <joaotavora@gmail.com>
-;; Version: 1.9
+;; Version: 1.10
 ;; Keywords: tools, processes, convenience
 ;; Created: 2012-03-24
 ;; URL: https://github.com/leoliu/ack-el
@@ -144,7 +144,7 @@ Each element is of the form (VC_DIR . CMD)."
 (define-obsolete-function-alias 'ack-default-directory
   'ack-legacy-defaults "1.7")
 
-(defcustom ack-defaults-function 'ack-legacy-defaults
+(defcustom ack-defaults-function 'ack-quickgrep-defaults
   "A function to return a default parametrization for `ack'.
 It is called with one arg, the prefix arg to `ack'.  It may
 return a single element, a string, which is the directory under
