@@ -1,10 +1,10 @@
 ;;; ack.el --- interface to ack-like tools           -*- lexical-binding: t; -*-
 
-;; Copyright (C) 2012-2018  Free Software Foundation, Inc.
+;; Copyright (C) 2012-2022  Free Software Foundation, Inc.
 
 ;; Author: Leo Liu <sdl.web@gmail.com>
 ;; Maintainer: João Távora <joaotavora@gmail.com>
-;; Version: 1.10
+;; Version: 1.11
 ;; Keywords: tools, processes, convenience
 ;; Created: 2012-03-24
 ;; URL: https://github.com/leoliu/ack-el
@@ -26,7 +26,7 @@
 
 ;; This package was originally written to provide an interface to ack
 ;; http://beyondgrep.com -- a tool like grep, designed for programmers
-;; with large trees of heterogeneous source code. It builds on
+;; with large trees of heterogeneous source code.  It builds on
 ;; standard packages `compile.el' and `ansi-color.el' and lets you
 ;; seamlessly run `ack' with its large set of options.
 ;;

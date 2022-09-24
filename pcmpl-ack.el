@@ -1,6 +1,6 @@
 ;;; pcmpl-ack.el --- completion for ack and ag       -*- lexical-binding: t; -*-
 
-;; Copyright (C) 2012-2015  Free Software Foundation, Inc.
+;; Copyright (C) 2012-2022  Free Software Foundation, Inc.
 
 ;; Author: Leo Liu <sdl.web@gmail.com>
 ;; Keywords: tools, processes, convenience
