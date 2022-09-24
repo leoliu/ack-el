@@ -1,7 +1,11 @@
 ==============================================================
  The Simple Emacs Interface to `Ack <http://beyondgrep.com>`_-like Tools
 ==============================================================
- 
+
+.. image:: https://elpa.gnu.org/packages/ack.svg
+   :target: https://elpa.gnu.org/packages/ack.html
+   :alt: GNU ELPA package
+
 This package integrates `ack <http://beyondgrep.com>`_ with `Emacs
 <http://www.gnu.org/software/emacs>`_.  The resulting ``*ack*`` buffer
 is just like vanilla ``*grep*`` but results come from your tool of
@@ -71,8 +75,8 @@ from a project root. Then it will try to insert the symbol at point.
   (add-hook 'ack-minibuffer-setup-hook 'ack-skel-vc-grep t)
   (add-hook 'ack-minibuffer-setup-hook 'ack-yank-symbol-at-point t)
 
-Emacs23
--------
+Emacs 23
+--------
 
 Check out the `emacs23
 <https://github.com/leoliu/ack-el/tree/emacs23>`_ branch.
