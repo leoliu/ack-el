@@ -378,10 +378,10 @@ This function is a suitable addition to
 (defun ack-yank-symbol-at-point ()
   "Yank the symbol from the window before entering the minibuffer."
   (interactive)
-  (let ((symbol (and (minibuffer-selected-window)
+  (let ((symbol (substring-no-properties (and (minibuffer-selected-window)
                      (with-current-buffer
                          (window-buffer (minibuffer-selected-window))
-                       (thing-at-point 'symbol)))))
+                       (thing-at-point 'symbol))))))
     (cond (symbol (insert symbol)
                   (set (make-local-variable 'ack--yanked-symbol) symbol))
           (t (minibuffer-message "No symbol found")))))
