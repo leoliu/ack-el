@@ -193,9 +193,6 @@ Used by `ack-guess-project-root'."
 (defvar ack-error "ack match"
   "Stem of message to print when no matches are found.")
 
-(defvar ack-finish-functions nil
-  "Value to use for `compilation-finish-functions' in ack buffers.")
-
 (defun ack-filter ()
   "Handle match highlighting escape sequences inserted by the ack process.
 This function is called from `compilation-filter-hook'."
